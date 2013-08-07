@@ -13,7 +13,7 @@ public class ApplicationDto {
     @JsonProperty("vms")
     private List<VmDto> virtualMachines = new ArrayList<VmDto>();
 
-    public ApplicationDto() {
+    private ApplicationDto() {
         // For Jackson
     }
 

@@ -31,7 +31,7 @@ public class HardDriveDto {
     @JsonProperty
     Boolean peripheral = true;
 
-    public HardDriveDto() {
+    private HardDriveDto() {
         // For Jackson
     }
 

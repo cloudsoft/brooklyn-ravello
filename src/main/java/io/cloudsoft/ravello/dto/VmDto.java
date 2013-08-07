@@ -13,7 +13,7 @@ public class VmDto {
     @JsonProperty("hardDrives")
     private List<HardDriveDto> hardDrives;
 
-    public VmDto() {
+    private VmDto() {
         // For Jackson
     }
 

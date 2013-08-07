@@ -19,7 +19,7 @@ public class VmPropertiesDto {
     @JsonProperty("memorySize")
     private SizeDto memorySize;
 
-    public VmPropertiesDto() {
+    private VmPropertiesDto() {
         // For Jackson
     }
 

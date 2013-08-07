@@ -16,7 +16,7 @@ public class ApplicationPropertiesDto {
     @JsonProperty("published")
     private Boolean published;
 
-    public ApplicationPropertiesDto() {
+    private ApplicationPropertiesDto() {
         // For Jackson
     }
 
