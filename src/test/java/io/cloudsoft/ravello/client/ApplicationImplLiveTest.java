@@ -12,12 +12,17 @@ import java.util.UUID;
 import org.testng.annotations.Test;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import io.cloudsoft.ravello.api.ApplicationApi;
 import io.cloudsoft.ravello.dto.ApplicationDto;
 import io.cloudsoft.ravello.dto.ApplicationPropertiesDto;
 import io.cloudsoft.ravello.dto.HardDriveDto;
+import io.cloudsoft.ravello.dto.IpConfigDto;
+import io.cloudsoft.ravello.dto.NetworkConnectionDto;
+import io.cloudsoft.ravello.dto.NetworkDeviceDto;
 import io.cloudsoft.ravello.dto.SizeDto;
+import io.cloudsoft.ravello.dto.SuppliedServiceDto;
 import io.cloudsoft.ravello.dto.VmDto;
 import io.cloudsoft.ravello.dto.VmPropertiesDto;
 
@@ -37,7 +42,7 @@ public class ApplicationImplLiveTest extends LiveTest {
         VmPropertiesDto vmProperties = new VmPropertiesDto(
                 null,
                 nameFor("vm"),
-                null,
+                "Test VM",
                 1,
                 SizeDto.gigabytes(1));
         VmDto appVm = new VmDto(
@@ -46,11 +51,18 @@ public class ApplicationImplLiveTest extends LiveTest {
                         null,
                         nameFor("hardDrive"),
                         true,
-                        SizeDto.gigabytes(20))));
+                        SizeDto.gigabytes(20))),
+                ImmutableSet.<SuppliedServiceDto>of(),
+                ImmutableList.of(new NetworkConnectionDto(
+                        null,
+                        nameFor("networkConnection"),
+                        true,
+                        new NetworkDeviceDto("virtio", 0, 0),
+                        new IpConfigDto())));
         ApplicationPropertiesDto appProperties = new ApplicationPropertiesDto(
                 null,
                 nameFor("app"),
-                null,
+                "Test application",
                 null);
         return new ApplicationDto(
                 appProperties,
@@ -61,14 +73,6 @@ public class ApplicationImplLiveTest extends LiveTest {
     public void testGetAllApplications() {
         List<ApplicationPropertiesDto> applications = appApi.get();
         assertNotNull(applications);
-        assertTrue(applications.size() > 0, "Expect at least one application in response");
-    }
-
-    @Test
-    public void testGetApplication() {
-        ApplicationDto application = appApi.get("34013235");
-        assertNotNull(application);
-        assertEquals("nginx-tomcat7-mysql-i", application.getProperties().getName());
     }
 
     @Test
@@ -108,7 +112,7 @@ public class ApplicationImplLiveTest extends LiveTest {
 
         } finally {
             if (created != null) {
-                appApi.delete(created.getProperties().getId());
+//                appApi.delete(created.getProperties().getId());
             }
         }
     }
