@@ -1,0 +1,435 @@
+{
+    "applicationProperties": {
+        "blueprint": false, 
+        "blueprintId": 1802351, 
+        "blueprintName": "nginx-tomcat7-mysql", 
+        "cloud": "Amazon", 
+        "creationTime": 1375110406113, 
+        "description": "Nginx, Tomcat 7 and MySQL.\nA blueprint for developing Java applications.\nLog-in (to the VMs) with the user ravello (using a SSH key-pair)", 
+        "expirationTime": 1375117633326, 
+        "expirationType": "STOPPED_BY_USER", 
+        "id": 34013235, 
+        "name": "nginx-tomcat7-mysql-i", 
+        "owner": "Cloudsoft Corporation", 
+        "public": false, 
+        "publishOptimization": "PERFORMANCE_OPTIMIZED", 
+        "publishStartTime": 1375110431801, 
+        "published": true, 
+        "regionName": "Virginia", 
+        "totalActiveVms": 0
+    }, 
+    "differsFromPublished": false, 
+    "layout": {
+        "groupLayoutItem": [
+            {
+                "dimension": {
+                    "height": 270, 
+                    "width": 109
+                }, 
+                "groupId": 48000681, 
+                "location": {
+                    "x": 286, 
+                    "y": 90
+                }
+            }, 
+            {
+                "dimension": {
+                    "height": 421, 
+                    "width": 139
+                }, 
+                "groupId": 1443536273, 
+                "location": {
+                    "x": 533, 
+                    "y": 106
+                }
+            }, 
+            {
+                "dimension": {
+                    "height": 130, 
+                    "width": 109
+                }, 
+                "groupId": 944739337, 
+                "location": {
+                    "x": 794, 
+                    "y": 211
+                }
+            }
+        ], 
+        "vmLayoutItem": [
+            {
+                "location": {
+                    "x": 0, 
+                    "y": 110
+                }, 
+                "vmId": 417920425
+            }, 
+            {
+                "location": {
+                    "x": 0, 
+                    "y": 18
+                }, 
+                "vmId": 1120290659
+            }, 
+            {
+                "location": {
+                    "x": 13, 
+                    "y": 193
+                }, 
+                "vmId": 672296123
+            }
+        ]
+    }, 
+    "network": {
+        "dnsService": {
+            "id": 2949594304176475930
+        }, 
+        "routerLegs": [
+            {
+                "id": 8679066836573566233, 
+                "routerRef": 4142998413910809417, 
+                "subnetRef": 609784127362566801
+            }
+        ], 
+        "routers": [
+            {
+                "id": 4142998413910809417, 
+                "isExternal": true
+            }
+        ], 
+        "subnets": [
+            {
+                "dhcp": {
+                    "active": true, 
+                    "id": 3689913275268769151, 
+                    "ip": "10.0.0.1", 
+                    "ipRangeBegin": "10.0.0.1", 
+                    "ipRangeEnd": "10.0.255.254"
+                }, 
+                "id": 609784127362566801, 
+                "ip": "10.0.0.0", 
+                "mask": "255.255.0.0", 
+                "networkConnectionRefs": [
+                    2072938978, 
+                    1038719921, 
+                    800815785
+                ]
+            }
+        ]
+    }, 
+    "networkFilter": {
+        "accessAllowedByDefault": false, 
+        "filteringEnabled": false
+    }, 
+    "tags": [
+        {
+            "id": 1443536273, 
+            "key": "_DESIGN_GROUP_TAG_", 
+            "value": "Application"
+        }, 
+        {
+            "id": 48000681, 
+            "key": "_DESIGN_GROUP_TAG_", 
+            "value": "Proxy"
+        }, 
+        {
+            "id": 944739337, 
+            "key": "_DESIGN_GROUP_TAG_", 
+            "value": "Database"
+        }
+    ], 
+    "version": 17, 
+    "vms": [
+        {
+            "hardDrives": [
+                {
+                    "boot": true, 
+                    "controller": "virtio", 
+                    "controllerIndex": 0, 
+                    "controllerPciSlot": 0, 
+                    "id": 1234006764, 
+                    "index": 0, 
+                    "loadingPercentage": 100, 
+                    "loadingStatus": "DONE", 
+                    "name": "C:\\Ravello\\ISO\\VMDK\\CentOS-6-64bit-minimal\\CloudInstancesHP.txt", 
+                    "peripheral": false, 
+                    "size": {
+                        "unit": "GB", 
+                        "value": 20
+                    }
+                }
+            ], 
+            "networkConnections": [
+                {
+                    "accessPort": true, 
+                    "device": {
+                        "deviceType": "virtio", 
+                        "index": 0, 
+                        "pciSlot": 0, 
+                        "useAutomaticMac": true
+                    }, 
+                    "id": 800815784, 
+                    "ipConfig": {
+                        "autoIpConfig": {}, 
+                        "id": 800815785
+                    }
+                }
+            ], 
+            "suppliedServices": [
+                {
+                    "globalService": false, 
+                    "id": 1301397677, 
+                    "name": "mysql", 
+                    "portRange": "3306", 
+                    "protocol": "TCP"
+                }, 
+                {
+                    "globalService": true, 
+                    "id": 246128083, 
+                    "name": "ssh", 
+                    "portRange": "22", 
+                    "protocol": "SSH"
+                }, 
+                {
+                    "globalService": false, 
+                    "id": 237232885, 
+                    "name": "http", 
+                    "portRange": "80", 
+                    "protocol": "TCP"
+                }
+            ], 
+            "tagRefs": [
+                {
+                    "tagId": 944739337
+                }
+            ], 
+            "vmProperties": {
+                "applicationId": 34013235, 
+                "baseVmId": 1769706, 
+                "creationTime": 1375110406121, 
+                "hostnames": [
+                    "mysqlserver"
+                ], 
+                "id": 1120290659, 
+                "importedByUser": false, 
+                "isPublic": false, 
+                "isPublished": false, 
+                "keypairId": 34013191, 
+                "legacyMode": false, 
+                "loadingPercentage": 100, 
+                "loadingStatus": "DONE", 
+                "memorySize": {
+                    "unit": "GB", 
+                    "value": 2
+                }, 
+                "name": "MySQL Server", 
+                "numCpus": 1, 
+                "os": "other", 
+                "platform": "esx-5", 
+                "published": false, 
+                "requiresHvm": false, 
+                "requiresKeypair": true, 
+                "supportsCloudInit": true
+            }
+        }, 
+        {
+            "hardDrives": [
+                {
+                    "boot": true, 
+                    "controller": "virtio", 
+                    "controllerIndex": 0, 
+                    "controllerPciSlot": 0, 
+                    "id": 998521994, 
+                    "index": 0, 
+                    "loadingPercentage": 100, 
+                    "loadingStatus": "DONE", 
+                    "name": "C:\\Ravello\\ISO\\VMDK\\CentOS-6-64bit-minimal\\CloudInstancesHP.txt", 
+                    "peripheral": false, 
+                    "size": {
+                        "unit": "GB", 
+                        "value": 20
+                    }
+                }
+            ], 
+            "networkConnections": [
+                {
+                    "accessPort": true, 
+                    "device": {
+                        "deviceType": "virtio", 
+                        "index": 0, 
+                        "pciSlot": 0, 
+                        "useAutomaticMac": true
+                    }, 
+                    "id": 1038719920, 
+                    "ipConfig": {
+                        "autoIpConfig": {}, 
+                        "id": 1038719921
+                    }
+                }
+            ], 
+            "requiredServices": [
+                {
+                    "globalService": false, 
+                    "id": 493437198, 
+                    "name": "tomcat", 
+                    "portRange": "8080", 
+                    "protocol": "TCP", 
+                    "suppliedServiceRef": 2056874822, 
+                    "targetHostName": "tomcat7"
+                }
+            ], 
+            "suppliedServices": [
+                {
+                    "globalService": false, 
+                    "id": 1526282693, 
+                    "name": "https", 
+                    "portRange": "443", 
+                    "protocol": "TCP"
+                }, 
+                {
+                    "globalService": true, 
+                    "id": 737701734, 
+                    "name": "ssh", 
+                    "portRange": "22", 
+                    "protocol": "SSH"
+                }, 
+                {
+                    "globalService": true, 
+                    "id": 2128845378, 
+                    "name": "http", 
+                    "portRange": "80", 
+                    "protocol": "TCP"
+                }
+            ], 
+            "tagRefs": [
+                {
+                    "tagId": 48000681
+                }
+            ], 
+            "vmProperties": {
+                "applicationId": 34013235, 
+                "baseVmId": 1638725, 
+                "creationTime": 1375110406316, 
+                "hostnames": [
+                    "proxy"
+                ], 
+                "id": 417920425, 
+                "importedByUser": false, 
+                "isPublic": false, 
+                "isPublished": false, 
+                "keypairId": 34013191, 
+                "legacyMode": false, 
+                "loadingPercentage": 100, 
+                "loadingStatus": "DONE", 
+                "memorySize": {
+                    "unit": "GB", 
+                    "value": 2
+                }, 
+                "name": "Proxy", 
+                "numCpus": 1, 
+                "os": "other", 
+                "platform": "esx-5", 
+                "published": false, 
+                "requiresHvm": false, 
+                "requiresKeypair": true, 
+                "supportsCloudInit": true
+            }
+        }, 
+        {
+            "hardDrives": [
+                {
+                    "boot": true, 
+                    "controller": "virtio", 
+                    "controllerIndex": 0, 
+                    "controllerPciSlot": 0, 
+                    "id": 1967365476, 
+                    "index": 0, 
+                    "loadingPercentage": 100, 
+                    "loadingStatus": "DONE", 
+                    "name": "C:\\Ravello\\ISO\\VMDK\\CentOS-6-64bit-minimal\\CloudInstancesHP.txt", 
+                    "peripheral": false, 
+                    "size": {
+                        "unit": "GB", 
+                        "value": 20
+                    }
+                }
+            ], 
+            "networkConnections": [
+                {
+                    "accessPort": true, 
+                    "device": {
+                        "deviceType": "virtio", 
+                        "index": 0, 
+                        "pciSlot": 0, 
+                        "useAutomaticMac": true
+                    }, 
+                    "id": 44959025, 
+                    "ipConfig": {
+                        "autoIpConfig": {}, 
+                        "id": 2072938978
+                    }
+                }
+            ], 
+            "requiredServices": [
+                {
+                    "globalService": false, 
+                    "id": 759718578, 
+                    "name": "mysql", 
+                    "portRange": "3306", 
+                    "protocol": "TCP", 
+                    "suppliedServiceRef": 1301397677, 
+                    "targetHostName": "mysqlserver"
+                }
+            ], 
+            "suppliedServices": [
+                {
+                    "globalService": false, 
+                    "id": 2056874822, 
+                    "name": "tomcat", 
+                    "portRange": "8080", 
+                    "protocol": "TCP"
+                }, 
+                {
+                    "globalService": true, 
+                    "id": 1629369865, 
+                    "name": "ssh", 
+                    "portRange": "22", 
+                    "protocol": "SSH"
+                }
+            ], 
+            "tagRefs": [
+                {
+                    "tagId": 1443536273
+                }
+            ], 
+            "vmProperties": {
+                "applicationId": 34013235, 
+                "baseVmId": 1769697, 
+                "creationTime": 1375111471236, 
+                "description": "Tomcat 7 installation (runs on openjdk). Only the base and the management applications.\nLog-in with the user ravello (using a SSH key-pair)", 
+                "hostnames": [
+                    "tomcat7"
+                ], 
+                "id": 672296123, 
+                "importedByUser": false, 
+                "isPublic": false, 
+                "isPublished": false, 
+                "keypairId": 34013191, 
+                "legacyMode": false, 
+                "loadingPercentage": 100, 
+                "loadingStatus": "DONE", 
+                "memorySize": {
+                    "unit": "GB", 
+                    "value": 2
+                }, 
+                "name": "Tomcat7", 
+                "numCpus": 1, 
+                "os": "other", 
+                "platform": "esx-5", 
+                "published": false, 
+                "requiresHvm": false, 
+                "requiresKeypair": true, 
+                "supportsCloudInit": true
+            }
+        }
+    ]
+}

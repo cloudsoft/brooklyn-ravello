@@ -1,0 +1,21 @@
+[
+    {
+        "blueprint": false, 
+        "blueprintId": 1802351, 
+        "blueprintName": "nginx-tomcat7-mysql", 
+        "cloud": "Amazon", 
+        "creationTime": 1375110406113, 
+        "description": "Nginx, Tomcat 7 and MySQL.\nA blueprint for developing Java applications.\nLog-in (to the VMs) with the user ravello (using a SSH key-pair)", 
+        "expirationTime": 1375117633326, 
+        "expirationType": "STOPPED_BY_USER", 
+        "id": 34013235, 
+        "name": "nginx-tomcat7-mysql-i", 
+        "owner": "Cloudsoft Corporation", 
+        "public": false, 
+        "publishOptimization": "PERFORMANCE_OPTIMIZED", 
+        "publishStartTime": 1375110431801, 
+        "published": true, 
+        "regionName": "Virginia", 
+        "totalActiveVms": 0
+    }
+]

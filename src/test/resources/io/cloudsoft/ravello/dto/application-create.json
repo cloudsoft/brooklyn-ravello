@@ -1,0 +1,18 @@
+{
+    "applicationProperties": {
+        "name": "api-created-app",
+        "description": "An application created with the API"
+    },
+    "vms": [
+        {
+            "vmProperties": {
+                "name": "vm-1",
+                "numCpus": 1,
+                "memorySize": {
+                    "unit": "GB",
+                    "value": 1
+                }
+            }
+        }
+    ]
+}
