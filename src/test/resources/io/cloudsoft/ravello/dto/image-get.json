@@ -1,0 +1,71 @@
+{
+    "hardDrives": [
+        {
+            "boot": true,
+            "controller": "virtio",
+            "controllerIndex": 0,
+            "controllerPciSlot": 1,
+            "id": 1,
+            "imageFileChecksum": "7a8af6ca18caecf18d7ccb85a83ea025",
+            "index": 0,
+            "loadingPercentage": 100,
+            "loadingStatus": "DONE",
+            "name": "ravello-ubuntu-12.04.1-20130124",
+            "peripheral": false,
+            "size": {
+                "unit": "GB",
+                "value": 32
+            }
+        }
+    ],
+    "networkConnections": [
+        {
+            "device": {
+                "deviceType": "virtio",
+                "index": 0,
+                "pciSlot": 0,
+                "useAutomaticMac": true
+            },
+            "id": 8884234107288272000,
+            "ipConfig": {
+                "autoIpConfig": {},
+                "id": 8884234107288272001
+            }
+        }
+    ],
+    "suppliedServices": [
+        {
+            "globalService": true,
+            "id": 96435783,
+            "name": "ssh",
+            "portRange": "22",
+            "protocol": "TCP"
+        }
+    ],
+    "vmProperties": {
+        "baseVmId": 1671271,
+        "creationTime": 1359557493476,
+        "description": "Standard Ubuntu 12.04.4.1.\nLog-in with the user ravello (using a SSH key-pair)",
+        "id": 1671271,
+        "importedByUser": true,
+        "internal": false,
+        "isPublic": true,
+        "isPublished": false,
+        "legacyMode": false,
+        "loadingPercentage": 100,
+        "loadingStatus": "DONE",
+        "memorySize": {
+            "unit": "GB",
+            "value": 2
+        },
+        "name": "Ubuntu 12.04.1 vanilla",
+        "numCpus": 1,
+        "os": "default",
+        "owner": "Ravello Systems",
+        "platform": "default",
+        "published": false,
+        "requiresHvm": false,
+        "requiresKeypair": true,
+        "supportsCloudInit": true
+    }
+}

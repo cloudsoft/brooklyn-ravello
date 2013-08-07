@@ -3,12 +3,12 @@ package io.cloudsoft.ravello.api;
 import java.util.List;
 
 import io.cloudsoft.ravello.dto.ApplicationDto;
-import io.cloudsoft.ravello.dto.ApplicationPropertiesDto;
+import io.cloudsoft.ravello.dto.ApplicationDto.ApplicationPropertiesDto;
 
 public interface ApplicationApi {
 
     // Error handling?
-    // 404 on get, return null. better way?
+    // 404 on get, return null. better way? Could return Optional
 
     public List<ApplicationPropertiesDto> get();
 
@@ -20,9 +20,8 @@ public interface ApplicationApi {
 
     public void publish(String id, String preferredCloud, String preferredRegion);
 
-    // one for all actions or all actions as separate methods?
-    //public void runActionOnPublishedApplication(String applicationId, String action);
-    public void start(String applicationId);
-    public void stop(String applicationId);
+    public void startVMs(String applicationId);
+    public void stopVMs(String applicationId);
+    public void publishUpdates(String applicationId);
 
 }

@@ -18,6 +18,9 @@
         <jackson.version>2.2.2</jackson.version>
         <httpcomponents.version>4.2.5</httpcomponents.version>
         <surefire.version>2.13</surefire.version>
+
+        <includedTestGroups>integration,live</includedTestGroups>
+        <excludedTestGroups/>
     </properties>
 
     <dependencies>
@@ -58,6 +61,16 @@
         </dependency>
     </dependencies>
 
+    <profiles>
+        <profile>
+            <id>live</id>
+            <properties>
+                <includedTestGroups>live</includedTestGroups>
+                <excludedTestGroups/>
+            </properties>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
             <plugin>
@@ -72,8 +85,8 @@
                         </property>
                     </properties>
                     <enableAssertions>true</enableAssertions>
-                    <!--<groups>${includedTestGroups}</groups>-->
-                    <!--<excludedGroups>${excludedTestGroups}</excludedGroups>-->
+                    <groups>${includedTestGroups}</groups>
+                    <excludedGroups>${excludedTestGroups}</excludedGroups>
                     <testFailureIgnore>false</testFailureIgnore>
                     <systemPropertyVariables>
                         <verbose>-1</verbose>

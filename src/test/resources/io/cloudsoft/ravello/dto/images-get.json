@@ -1,0 +1,86 @@
+[
+    {
+        "creationTime": 1357710224614, 
+        "description": "A database for the guided tour sample application. Running MySQL on top of Centos 6.3.", 
+        "hostnames": [
+            "db"
+        ], 
+        "id": 1278047, 
+        "importedByUser": false, 
+        "internal": false, 
+        "isPublic": true, 
+        "isPublished": false, 
+        "legacyMode": false, 
+        "loadingPercentage": 100, 
+        "loadingStatus": "DONE", 
+        "memorySize": {
+            "unit": "GB", 
+            "value": 2
+        }, 
+        "name": "Database - Sample Application", 
+        "numCpus": 1, 
+        "os": "other", 
+        "owner": "Ravello Systems", 
+        "platform": "esx-5", 
+        "published": false, 
+        "requiresHvm": false, 
+        "requiresKeypair": false, 
+        "supportsCloudInit": false
+    }, 
+    {
+        "creationTime": 1357710224614, 
+        "description": "A web server for the guided installation sample application. Running Apache and Wordpress on top of Centos 6.3.", 
+        "hostnames": [
+            "wordpress"
+        ], 
+        "id": 1278048, 
+        "importedByUser": false, 
+        "internal": false, 
+        "isPublic": true, 
+        "isPublished": false, 
+        "legacyMode": false, 
+        "loadingPercentage": 100, 
+        "loadingStatus": "DONE", 
+        "memorySize": {
+            "unit": "GB", 
+            "value": 2
+        }, 
+        "name": "Webserver - Sample Application", 
+        "numCpus": 1, 
+        "os": "other", 
+        "owner": "Ravello Systems", 
+        "platform": "esx-5", 
+        "published": false, 
+        "requiresHvm": false, 
+        "requiresKeypair": false, 
+        "supportsCloudInit": false
+    }, 
+    {
+        "creationTime": 1357662885979, 
+        "description": "TestMill: CentOS 6 with latest updates. To be used with TestMill only. This image is NOT usable as a general purpose image.", 
+        "hostnames": [
+            "centos6"
+        ], 
+        "id": 1508326, 
+        "importedByUser": false, 
+        "internal": false, 
+        "isPublic": true, 
+        "isPublished": false, 
+        "legacyMode": false, 
+        "loadingPercentage": 100, 
+        "loadingStatus": "DONE", 
+        "memorySize": {
+            "unit": "GB", 
+            "value": 2
+        }, 
+        "name": "TestMill:centos6", 
+        "numCpus": 1, 
+        "os": "linux_manuel", 
+        "owner": "Ravello Systems", 
+        "platform": "kvm_manuel", 
+        "published": false, 
+        "requiresHvm": false, 
+        "requiresKeypair": true, 
+        "supportsCloudInit": true
+    }
+]

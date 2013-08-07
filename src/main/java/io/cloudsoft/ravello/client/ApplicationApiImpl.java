@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableMap;
 
 import io.cloudsoft.ravello.api.ApplicationApi;
 import io.cloudsoft.ravello.dto.ApplicationDto;
-import io.cloudsoft.ravello.dto.ApplicationPropertiesDto;
+import io.cloudsoft.ravello.dto.ApplicationDto.ApplicationPropertiesDto;
 
 public class ApplicationApiImpl implements ApplicationApi {
 
@@ -53,13 +53,18 @@ public class ApplicationApiImpl implements ApplicationApi {
     }
 
     @Override
-    public void start(String applicationId) {
+    public void startVMs(String applicationId) {
         runActionOnApplication(applicationId, "start");
     }
 
     @Override
-    public void stop(String applicationId) {
+    public void stopVMs(String applicationId) {
         runActionOnApplication(applicationId, "stop");
+    }
+
+    @Override
+    public void publishUpdates(String applicationId) {
+        runActionOnApplication(applicationId, "publishUpdates");
     }
 
     private void runActionOnApplication(String applicationId, String action) {

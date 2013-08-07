@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableSet;
 
 import io.cloudsoft.ravello.api.ApplicationApi;
 import io.cloudsoft.ravello.dto.ApplicationDto;
-import io.cloudsoft.ravello.dto.ApplicationPropertiesDto;
+import io.cloudsoft.ravello.dto.ApplicationDto.ApplicationPropertiesDto;
 import io.cloudsoft.ravello.dto.HardDriveDto;
 import io.cloudsoft.ravello.dto.IpConfigDto;
 import io.cloudsoft.ravello.dto.NetworkConnectionDto;
@@ -24,8 +24,8 @@ import io.cloudsoft.ravello.dto.NetworkDeviceDto;
 import io.cloudsoft.ravello.dto.SizeDto;
 import io.cloudsoft.ravello.dto.SuppliedServiceDto;
 import io.cloudsoft.ravello.dto.VmDto;
-import io.cloudsoft.ravello.dto.VmPropertiesDto;
 
+@Test(groups = "live")
 public class ApplicationImplLiveTest extends LiveTest {
 
     // TODO: Add tests to live group
@@ -39,14 +39,12 @@ public class ApplicationImplLiveTest extends LiveTest {
 
     /** Makes an ApplicationDto with one VM. */
     private ApplicationDto makeTestApplication() {
-        VmPropertiesDto vmProperties = new VmPropertiesDto(
+        VmDto appVm = new VmDto(
                 null,
                 nameFor("vm"),
                 "Test VM",
                 1,
-                SizeDto.gigabytes(1));
-        VmDto appVm = new VmDto(
-                vmProperties,
+                SizeDto.gigabytes(1),
                 ImmutableList.of(new HardDriveDto(
                         null,
                         nameFor("hardDrive"),
@@ -57,25 +55,23 @@ public class ApplicationImplLiveTest extends LiveTest {
                         null,
                         nameFor("networkConnection"),
                         true,
-                        new NetworkDeviceDto("virtio", 0, 0),
+                        new NetworkDeviceDto("virtio", 0, 1),
                         new IpConfigDto())));
-        ApplicationPropertiesDto appProperties = new ApplicationPropertiesDto(
+        return new ApplicationDto(
                 null,
                 nameFor("app"),
                 "Test application",
-                null);
-        return new ApplicationDto(
-                appProperties,
+                null,
                 ImmutableList.of(appVm));
     }
 
-    @Test
+    @Test(groups = "live")
     public void testGetAllApplications() {
         List<ApplicationPropertiesDto> applications = appApi.get();
         assertNotNull(applications);
     }
 
-    @Test
+    @Test(groups = "live")
     public void testCreateAndDeleteApplication() {
         ApplicationDto created = null;
         try {
@@ -83,20 +79,20 @@ public class ApplicationImplLiveTest extends LiveTest {
             created = appApi.create(toCreate);
 
             assertNotNull(created, "Created application should not be null");
-            assertNotNull(created.getProperties().getId());
+            assertNotNull(created.getId());
             assertNotNull(created.getVMs());
             assertEquals(1, created.getVMs().size());
-            assertEquals(toCreate.getVMs().get(0).getProperties().getName(),
-                          created.getVMs().get(0).getProperties().getName());
+            assertEquals(toCreate.getVMs().get(0).getName(),
+                    created.getVMs().get(0).getName());
         } finally {
             if (created != null) {
-                appApi.delete(created.getProperties().getId());
-                assertNull(appApi.get(created.getProperties().getId()));
+                appApi.delete(created.getId());
+                assertNull(appApi.get(created.getId()));
             }
         }
     }
 
-    @Test
+    @Test(groups = "live")
     public void testPublishingApplication() {
         ApplicationDto created = null;
         try {
@@ -104,15 +100,15 @@ public class ApplicationImplLiveTest extends LiveTest {
             created = appApi.create(toCreate);
 
             assertNotNull(created, "Created application should not be null");
-            assertFalse(created.getProperties().isPublished(), "Newly created application should not be published");
+            assertFalse(created.isPublished(), "Newly created application should not be published");
 
-            String id = created.getProperties().getId();
+            String id = created.getId();
             appApi.publish(id, "AMAZON", "Virginia");
-            assertTrue(appApi.get(id).getProperties().isPublished(), "Application should be published");
+            assertTrue(appApi.get(id).isPublished(), "Application should be published");
 
         } finally {
             if (created != null) {
-//                appApi.delete(created.getProperties().getId());
+                appApi.delete(created.getId());
             }
         }
     }

@@ -26,9 +26,10 @@ public class VmDto {
     }
 
     /** Adds {@link SuppliedServiceDto#SSH_SERVICE} to supplied services. */
-    public VmDto(VmPropertiesDto properties, List<HardDriveDto> hardDrives, Set<SuppliedServiceDto> suppliedServices,
+    public VmDto(String id, String name, String description, Integer numCpus, SizeDto memorySize,
+            List<HardDriveDto> hardDrives, Set<SuppliedServiceDto> suppliedServices,
             List<NetworkConnectionDto> networkConnections) {
-        this.vmProperties = properties;
+        this.vmProperties = new VmPropertiesDto(id, name, description, numCpus, memorySize);
         this.hardDrives = ImmutableList.copyOf(hardDrives);
         this.suppliedServices = ImmutableSet.<SuppliedServiceDto>builder()
                 .addAll(suppliedServices)
@@ -37,12 +38,78 @@ public class VmDto {
         this.networkConnections = ImmutableList.copyOf(networkConnections);
     }
 
-    public VmPropertiesDto getProperties() {
-        return vmProperties;
-    }
-
     public List<HardDriveDto> getHardDrives() {
         return hardDrives;
     }
 
+    public String getId() {
+        return vmProperties.id;
+    }
+
+    public String getName() {
+        return vmProperties.name;
+    }
+
+    public String getDescription() {
+        return vmProperties.description;
+    }
+
+    public Integer getNumCpus() {
+        return vmProperties.numCpus;
+    }
+
+    public SizeDto getMemorySize() {
+        return vmProperties.memorySize;
+    }
+
+    // TODO: As with ApplicationPropertiesDto, would be good if this was a private class.
+    public static class VmPropertiesDto {
+
+        @JsonProperty("id")
+        private String id;
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("description")
+        private String description;
+
+        @JsonProperty("numCpus")
+        private Integer numCpus;
+
+        @JsonProperty("memorySize")
+        private SizeDto memorySize;
+
+        private VmPropertiesDto() {
+            // For Jackson
+        }
+
+        public VmPropertiesDto(String id, String name, String description, Integer numCpus, SizeDto memorySize) {
+            this.id = id;
+            this.name = name;
+            this.description = description;
+            this.numCpus = numCpus;
+            this.memorySize = memorySize;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public Integer getNumCpus() {
+            return numCpus;
+        }
+
+        public SizeDto getMemorySize() {
+            return memorySize;
+        }
+    }
 }
