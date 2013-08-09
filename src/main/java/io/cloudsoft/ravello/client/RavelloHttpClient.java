@@ -23,6 +23,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -106,6 +107,17 @@ public class RavelloHttpClient {
     public <T> T post(String uri, Object body, Class<T> unmarshalAs) {
         HttpResponse response = post(uri, body);
         return unmarshalResponseEntity(response, MAPPER.constructType(unmarshalAs));
+    }
+
+    public <T> T put(String uri, Object body, Class<T> unmarshalAs) {
+        HttpResponse response = post(uri, body);
+        return unmarshalResponseEntity(response, MAPPER.constructType(unmarshalAs));
+    }
+
+    public HttpResponse put(String uri, Object body) {
+        HttpPut request = new HttpPut(endpoint+uri);
+        attachEntityToRequest(request, checkNotNull(body, "body"));
+        return doRequest(request);
     }
 
     public HttpResponse delete(String uri) {

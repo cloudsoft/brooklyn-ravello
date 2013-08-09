@@ -44,6 +44,14 @@ public class ApplicationApiImpl implements ApplicationApi {
     }
 
     @Override
+    public ApplicationDto update(String id, ApplicationDto application) {
+        return ravelloClient.put(
+                url + "/" + checkNotNull(id, "id"),
+                checkNotNull(application, "application"),
+                ApplicationDto.class);
+    }
+
+    @Override
     public void delete(String id) {
         checkNotNull(id, "id");
         ravelloClient.delete(url + "/" + id);

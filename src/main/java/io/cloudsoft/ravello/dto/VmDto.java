@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -13,12 +16,17 @@ public class VmDto {
         return new Builder();
     }
 
+    public Builder toBuilder() {
+        return builder().fromVmDto(this);
+    }
+
     public static class Builder {
         private String id;
         private String name;
         private String description;
         private Integer numCpus;
         private SizeDto memorySize;
+        private VmRuntimeInformationDto runtimeInformation;
         private List<HardDriveDto> hardDrives;
         private Set<SuppliedServiceDto> suppliedServices;
         private List<NetworkConnectionDto> networkConnections;
@@ -43,6 +51,14 @@ public class VmDto {
             this.memorySize = memorySize;
             return this;
         }
+
+        /** Only visible for {@link io.cloudsoft.ravello.client.RavelloApiLocalImpl} */
+        @VisibleForTesting
+        public Builder runtimeInformation(VmRuntimeInformationDto runtimeInformation) {
+            this.runtimeInformation = runtimeInformation;
+            return this;
+        }
+
         public Builder hardDrives(List<HardDriveDto> hardDrives) {
             this.hardDrives = ImmutableList.copyOf(hardDrives);
             return this;
@@ -52,15 +68,15 @@ public class VmDto {
             return this;
         }
         public Builder networkConnections(List<NetworkConnectionDto> networkConnections) {
-            this.networkConnections = ImmutableList.copyOf(networkConnections);
+            this.networkConnections = networkConnections;
             return this;
         }
         public Builder networkConnections(NetworkConnectionDto... networkConnections) {
             this.networkConnections = ImmutableList.copyOf(networkConnections);
             return this;
         }
-        public Builder suppliedServices(List<SuppliedServiceDto> suppliedServices) {
-            this.suppliedServices = ImmutableSet.copyOf(suppliedServices);
+        public Builder suppliedServices(Set<SuppliedServiceDto> suppliedServices) {
+            this.suppliedServices = suppliedServices;
             return this;
         }
         public Builder suppliedServices(SuppliedServiceDto... suppliedServices) {
@@ -69,9 +85,21 @@ public class VmDto {
         }
 
         public VmDto build() {
-            return new VmDto(id, name, description, numCpus, memorySize, hardDrives, suppliedServices, networkConnections);
+            VmPropertiesDto properties = new VmPropertiesDto(id, name, description, numCpus, memorySize, runtimeInformation);
+            return new VmDto(properties, hardDrives, suppliedServices, networkConnections);
         }
 
+        public Builder fromVmDto(VmDto in) {
+            return this
+                    .id(in.getId())
+                    .name(in.getName())
+                    .description(in.getDescription())
+                    .numCpus(in.getNumCpus())
+                    .memorySize(in.getMemorySize())
+                    .hardDrives(in.getHardDrives())
+                    .suppliedServices(in.getSuppliedServices())
+                    .networkConnections(in.getNetworkConnections());
+        }
     }
 
     @JsonProperty private VmPropertiesDto vmProperties;
@@ -83,17 +111,24 @@ public class VmDto {
         // For Jackson
     }
 
-    protected VmDto(String id, String name, String description, Integer numCpus, SizeDto memorySize,
-            List<HardDriveDto> hardDrives, Set<SuppliedServiceDto> suppliedServices,
+    protected VmDto(VmPropertiesDto properties, List<HardDriveDto> hardDrives, Set<SuppliedServiceDto> suppliedServices,
             List<NetworkConnectionDto> networkConnections) {
-        this.vmProperties = new VmPropertiesDto(id, name, description, numCpus, memorySize);
-        this.hardDrives = hardDrives;
-        this.suppliedServices = suppliedServices;
-        this.networkConnections = networkConnections;
+        this.vmProperties = properties;
+        this.hardDrives = hardDrives != null ? ImmutableList.copyOf(hardDrives) : null;
+        this.suppliedServices = suppliedServices != null ? ImmutableSet.copyOf(suppliedServices) : null;
+        this.networkConnections = networkConnections != null ? ImmutableList.copyOf(networkConnections) : null;
     }
 
     public List<HardDriveDto> getHardDrives() {
         return hardDrives;
+    }
+
+    public Set<SuppliedServiceDto> getSuppliedServices() {
+        return suppliedServices;
+    }
+
+    public List<NetworkConnectionDto> getNetworkConnections() {
+        return networkConnections;
     }
 
     public String getId() {
@@ -116,12 +151,18 @@ public class VmDto {
         return vmProperties != null ? vmProperties.getMemorySize() : null;
     }
 
-    public Set<SuppliedServiceDto> getSuppliedServices() {
-        return suppliedServices;
+    public VmRuntimeInformationDto getRuntimeInformation() {
+        return vmProperties != null ? vmProperties.getRuntimeInformation() : null;
     }
 
-    public List<NetworkConnectionDto> getNetworkConnections() {
-        return networkConnections;
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("properties", vmProperties)
+                .add("hardDrives", hardDrives)
+                .add("suppliedServices", suppliedServices)
+                .add("networkConnections", networkConnections)
+                .toString();
     }
 
     public static class VmPropertiesDto {
@@ -131,17 +172,20 @@ public class VmDto {
         @JsonProperty private String description;
         @JsonProperty private Integer numCpus;
         @JsonProperty private SizeDto memorySize;
+        @JsonProperty private VmRuntimeInformationDto runtimeInformation;
 
         private VmPropertiesDto() {
             // For Jackson
         }
 
-        private VmPropertiesDto(String id, String name, String description, Integer numCpus, SizeDto memorySize) {
+        private VmPropertiesDto(String id, String name, String description, Integer numCpus, SizeDto memorySize,
+                VmRuntimeInformationDto runtimeInformation) {
             this.id = id;
             this.name = name;
             this.description = description;
             this.numCpus = numCpus;
             this.memorySize = memorySize;
+            this.runtimeInformation = runtimeInformation;
         }
 
         public String getId() {
@@ -163,5 +207,22 @@ public class VmDto {
         public SizeDto getMemorySize() {
             return memorySize;
         }
+
+        public VmRuntimeInformationDto getRuntimeInformation() {
+            return runtimeInformation;
+        }
+
+        @Override
+        public String toString() {
+            return Objects.toStringHelper(this)
+                    .add("id", id)
+                    .add("name", name)
+                    .add("description", description)
+                    .add("numCpus", numCpus)
+                    .add("memorySize", memorySize)
+                    .add("runtimeInformation", runtimeInformation)
+                    .toString();
+        }
+
     }
 }

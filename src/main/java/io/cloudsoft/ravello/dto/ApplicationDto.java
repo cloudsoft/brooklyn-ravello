@@ -1,5 +1,7 @@
 package io.cloudsoft.ravello.dto;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,11 +43,17 @@ public class ApplicationDto {
             return this;
         }
         public Builder vms(List<VmDto> vms) {
-            this.vms = ImmutableList.copyOf(vms);
+            this.vms = vms;
             return this;
         }
         public Builder vms(VmDto... vms) {
             this.vms = ImmutableList.copyOf(vms);
+            return this;
+        }
+        public Builder addVm(VmDto vm) {
+            this.vms = this.vms == null
+                ? ImmutableList.of(vm)
+                : ImmutableList.<VmDto>builder().add(checkNotNull(vm, "vm")).addAll(vms).build();
             return this;
         }
         public Builder version(Integer version) {
@@ -88,7 +96,7 @@ public class ApplicationDto {
     protected ApplicationDto(String id, String name, String description, Boolean published, Integer version,
             List<VmDto> vms) {
         this.properties = new ApplicationPropertiesDto(id, name, description, published);
-        this.virtualMachines = vms;
+        this.virtualMachines = vms == null ? null : ImmutableList.copyOf(vms);
         this.version = version == null ? 0 : version;
     }
 
@@ -114,6 +122,10 @@ public class ApplicationDto {
 
     public Boolean isPublished() {
         return properties != null ? properties.isPublished() : null;
+    }
+
+    public ApplicationPropertiesDto getProperties() {
+        return properties;
     }
 
     public static class ApplicationPropertiesDto {
