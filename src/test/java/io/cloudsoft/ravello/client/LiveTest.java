@@ -6,7 +6,7 @@ import io.cloudsoft.ravello.api.RavelloApi;
 
 public class LiveTest {
 
-    private static final String USER_PROPERTY = "ravello.user";
+    private static final String USER_PROPERTY = "ravello.username";
     private static final String PASSWORD_PROPERTY = "ravello.password";
 
     final String endpoint = "https://cloud.ravellosystems.com/services";

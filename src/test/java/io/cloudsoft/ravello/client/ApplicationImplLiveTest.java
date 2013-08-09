@@ -39,30 +39,34 @@ public class ApplicationImplLiveTest extends LiveTest {
 
     /** Makes an ApplicationDto with one VM. */
     private ApplicationDto makeTestApplication() {
-        VmDto appVm = new VmDto(
-                null,
-                nameFor("vm"),
-                "Test VM",
-                1,
-                SizeDto.gigabytes(1),
-                ImmutableList.of(new HardDriveDto(
-                        null,
-                        nameFor("hardDrive"),
-                        true,
-                        SizeDto.gigabytes(20))),
-                ImmutableSet.<SuppliedServiceDto>of(),
-                ImmutableList.of(new NetworkConnectionDto(
-                        null,
-                        nameFor("networkConnection"),
-                        true,
-                        new NetworkDeviceDto("virtio", 0, 1),
-                        new IpConfigDto())));
-        return new ApplicationDto(
-                null,
-                nameFor("app"),
-                "Test application",
-                null,
-                ImmutableList.of(appVm));
+        VmDto appVm = VmDto.builder()
+                .name(nameFor("vm"))
+                .description("Test VM")
+                .numCpus(1)
+                .memorySize(SizeDto.gigabytes(1))
+                .hardDrives(HardDriveDto.builder()
+                        .name(nameFor("hard-drive"))
+                        .size(SizeDto.gigabytes(20))
+                        .controller("ide")
+                        .boot(true)
+                        .index(0)
+                        .controllerPciSlot(0)
+                        .controllerIndex(0)
+                        .peripheral(true)
+                        .build())
+//                .networkConnections(NetworkConnectionDto.builder()
+//                        .name(nameFor("networkConnection"))
+//                        .accessPort(true)
+//                        .device(NetworkDeviceDto.builder().useAutomaticMac().deviceType("virtio").index(0).build())
+//                        .ipConfig(new IpConfigDto())
+//                        .build())
+//                .suppliedServices(SuppliedServiceDto.SSH_SERVICE)
+                .build();
+        return ApplicationDto.builder()
+                .name(nameFor("app"))
+                .description("Test application")
+                .vms(appVm)
+                .build();
     }
 
     @Test(groups = "live")

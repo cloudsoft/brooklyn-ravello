@@ -18,6 +18,7 @@ public interface ApplicationApi {
 
     public void delete(String id);
 
+    // TODO: make preferred cloud and preferred region enums/something that isn't a string
     public void publish(String id, String preferredCloud, String preferredRegion);
 
     public void startVMs(String applicationId);
