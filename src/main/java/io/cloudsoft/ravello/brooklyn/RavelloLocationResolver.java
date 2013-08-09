@@ -37,6 +37,7 @@ public class RavelloLocationResolver implements LocationResolver {
         return BasicLocationRegistry.isResolverPrefixForSpec(this, spec, false);
     }
 
+    @Deprecated
     @Override
     public Location newLocationFromString(Map properties, String spec) {
         return newLocationFromString(spec, Optional.<LocationRegistry>absent(), properties, new MutableMap());
