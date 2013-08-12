@@ -1,17 +1,21 @@
 package io.cloudsoft.ravello.brooklyn;
 
 import brooklyn.location.basic.SshMachineLocation;
+import brooklyn.util.flags.SetFromFlag;
 import io.cloudsoft.ravello.dto.VmDto;
 
 public class RavelloSshLocation extends SshMachineLocation {
 
-    private final VmDto vm;
+    @SetFromFlag
+    RavelloLocation parent;
 
-    public RavelloSshLocation(VmDto ownedVM) {
-        super();
-        this.vm = ownedVM;
-        setConfig(SSH_HOST, vm.getRuntimeInformation().getExternalFullyQualifiedDomainName());
-        // TODO: Get port from suppliedServices ssh service
-        setConfig(SSH_PORT, 22);
+    @SetFromFlag
+    VmDto vm;
+
+    public RavelloSshLocation() {
+    }
+
+    public VmDto getVm() {
+        return vm;
     }
 }

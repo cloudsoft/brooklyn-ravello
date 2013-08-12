@@ -1,6 +1,7 @@
 package io.cloudsoft.ravello.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 
 /** Contained in VmDto properties when a VM is running. */
 public class VmRuntimeInformationDto {
@@ -29,5 +30,15 @@ public class VmRuntimeInformationDto {
 
     public String getState() {
         return state;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("differsFromPublished", differsFromPublished)
+                .add("externalFullyQualifiedDomainName", externalFullyQualifiedDomainName)
+                .add("state", state)
+                .omitNullValues()
+                .toString();
     }
 }

@@ -5,10 +5,16 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
+import org.jclouds.vcloud.domain.Vm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import brooklyn.util.text.Identifiers;
@@ -69,6 +75,7 @@ public class RavelloApiLocalImpl implements RavelloApi {
             ApplicationDto.Builder modifiedApp = application.toBuilder().vms();
             for (VmDto vm : application.getVMs()) {
                 VmDto localhostVM = vm.toBuilder()
+                        .id(vm.getId() == null ? Identifiers.makeRandomId(8) : vm.getId())
                         .runtimeInformation(new VmRuntimeInformationDto(false, "localhost", "PUBLISHED"))
                         .build();
                 modifiedApp.addVm(localhostVM);

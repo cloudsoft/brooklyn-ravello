@@ -6,23 +6,20 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Map;
 
-import javax.annotation.Nullable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 
-import brooklyn.config.ConfigKey;
-import brooklyn.entity.basic.ConfigKeys;
+import brooklyn.location.LocationSpec;
 import brooklyn.location.NoMachinesAvailableException;
 import brooklyn.location.basic.SshMachineLocation;
 import brooklyn.location.cloud.AbstractCloudMachineProvisioningLocation;
+import brooklyn.location.jclouds.JcloudsSshMachineLocation;
+import brooklyn.util.collections.MutableMap;
 import brooklyn.util.text.Identifiers;
 import io.cloudsoft.ravello.api.RavelloApi;
-import io.cloudsoft.ravello.client.RavelloApiImpl;
 import io.cloudsoft.ravello.client.RavelloApiLocalImpl;
 import io.cloudsoft.ravello.dto.ApplicationDto;
 import io.cloudsoft.ravello.dto.SuppliedServiceDto;
@@ -56,6 +53,10 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         //String password = (String) checkNotNull(properties.get("password"), "password");
         //ravello = new RavelloApiImpl(apiEndpoint, username, password);
         ravello = new RavelloApiLocalImpl();
+    }
+
+    public RavelloSshLocation obtain() throws NoMachinesAvailableException {
+        return obtain(MutableMap.of());
     }
 
     @Override
@@ -103,7 +104,14 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         }
 
         LOG.info("Created new VM: " + created);
-        return new RavelloSshLocation(created);
+
+        return getManagementContext().getLocationManager().createLocation(LocationSpec.spec(RavelloSshLocation.class)
+                .configure("address", created.getRuntimeInformation().getExternalFullyQualifiedDomainName())
+                .configure("ravelloParent", this)
+                .configure("vm", created));
+//                        .configure("displayName", vmHostname)
+//                        .configure("user", "ravello")
+//                        .configure(sshConfig)
     }
 
     @Override
@@ -112,19 +120,26 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         checkArgument(machine instanceof RavelloSshLocation,
                 "release() given instance of "+machine.getClass().getName()+", expected instance of "+RavelloSshLocation.class.getName());
         RavelloSshLocation ravelloMachine = RavelloSshLocation.class.cast(machine);
-
+        LOG.info("Removing machine with VM: " + ravelloMachine.getVm());
         synchronized (lock) {
-            //applicationModel.removeVm(ravelloMachine);
-            //ravello.getApplicationApi().delete(ravelloMachine.getVm().getId());
-            //ravello.getApplicationApi().publishUpdates(applicationModel.getId());
+            String appId = applicationModel.getId();
+            ApplicationDto forUpdate = ApplicationDto.builder()
+                    .fromApplicationDto(applicationModel)
+                    .incrementVersion()
+                    .removeVm(ravelloMachine.getVm().getId())
+                    .build();
+            ravello.getApplicationApi().update(appId, forUpdate);
+            ravello.getApplicationApi().publishUpdates(appId);
+            applicationModel = ravello.getApplicationApi().get(appId);
         }
-        throw new UnsupportedOperationException();
+        LOG.info("{} removed {} from {}", this, machine, applicationModel);
     }
 
     private ApplicationDto createEmptyApplication() {
         LOG.info("Creating empty application for " + this);
         ApplicationDto toCreate = ApplicationDto.builder()
             .name(nameFor("app"))
+            .version(0)
             .description("Brooklyn application")
             .build();
         ApplicationDto created = ravello.getApplicationApi().create(toCreate);

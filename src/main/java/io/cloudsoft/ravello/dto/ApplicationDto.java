@@ -5,8 +5,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 public class ApplicationDto {
 
@@ -54,6 +60,16 @@ public class ApplicationDto {
             this.vms = this.vms == null
                 ? ImmutableList.of(vm)
                 : ImmutableList.<VmDto>builder().add(checkNotNull(vm, "vm")).addAll(vms).build();
+            return this;
+        }
+        public Builder removeVm(final String id) {
+            checkNotNull(id, "id");
+            if (this.vms == null) return this;
+            ImmutableList.Builder<VmDto> vms = ImmutableList.builder();
+            for (VmDto vm : this.vms) {
+                if (!vm.getId().equals(id)) vms.add(vm);
+            }
+            this.vms = vms.build();
             return this;
         }
         public Builder version(Integer version) {
@@ -121,7 +137,7 @@ public class ApplicationDto {
     }
 
     public Boolean isPublished() {
-        return properties != null ? properties.isPublished() : null;
+        return properties != null && properties.isPublished();
     }
 
     public ApplicationPropertiesDto getProperties() {
@@ -159,7 +175,7 @@ public class ApplicationDto {
         }
 
         public Boolean isPublished() {
-            return published;
+            return published != null && published;
         }
     }
 

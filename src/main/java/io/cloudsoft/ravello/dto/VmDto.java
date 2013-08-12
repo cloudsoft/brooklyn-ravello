@@ -66,7 +66,7 @@ public class VmDto {
             return this;
         }
         public Builder hostnames(List<String> hostnames) {
-            this.hostnames = ImmutableList.copyOf(hostnames);
+            this.hostnames = hostnames;
             return this;
         }
         public Builder hostnames(String... hostnames) {
@@ -94,7 +94,7 @@ public class VmDto {
         }
 
         public Builder hardDrives(List<HardDriveDto> hardDrives) {
-            this.hardDrives = ImmutableList.copyOf(hardDrives);
+            this.hardDrives = hardDrives;
             return this;
         }
         public Builder hardDrives(HardDriveDto... hardDrives) {
@@ -222,6 +222,7 @@ public class VmDto {
                 .add("hardDrives", hardDrives)
                 .add("suppliedServices", suppliedServices)
                 .add("networkConnections", networkConnections)
+                .omitNullValues()
                 .toString();
     }
 
@@ -262,7 +263,7 @@ public class VmDto {
             this.numCpus = numCpus;
             this.memorySize = memorySize;
             this.platform = platform;
-            this.hostnames = hostnames;
+            this.hostnames = hostnames != null ? ImmutableList.copyOf(hostnames) : null;
             this.keypairId = keypairId;
             this.requiresKeypair = requiresKeypair;
             this.runtimeInformation = runtimeInformation;
@@ -326,6 +327,7 @@ public class VmDto {
                     .add("requiresKeypair", requiresKeypair)
                     .add("keypairId", keypairId)
                     .add("runtimeInformation", runtimeInformation)
+                    .omitNullValues()
                     .toString();
         }
 

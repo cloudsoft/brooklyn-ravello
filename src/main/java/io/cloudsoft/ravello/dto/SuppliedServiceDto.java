@@ -1,6 +1,7 @@
 package io.cloudsoft.ravello.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 
 public class SuppliedServiceDto {
 
@@ -79,5 +80,19 @@ public class SuppliedServiceDto {
         this.portRange = portRange;
         this.protocol = protocol;
         this.globalService = globalService;
+    }
+
+
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("id", id)
+                .add("name", name)
+                .add("listenIp", listenIp)
+                .add("portRange", portRange)
+                .add("protocol", protocol)
+                .add("globalService", globalService)
+                .omitNullValues()
+                .toString();
     }
 }
