@@ -61,7 +61,7 @@ public class ApplicationApiImpl implements ApplicationApi {
     public void publish(String id, String preferredCloud, String preferredRegion) {
         checkNotNull(id, "id");
         if (!Cloud.KNOWN_CLOUDS.contains(preferredCloud) ||
-                !Cloud.fromValue(preferredCloud).hasRegion(preferredCloud)) {
+                !Cloud.fromValue(preferredCloud).hasRegion(preferredRegion)) {
             LOG.warn("Publishing app {} to unknown cloud and region: {}/{}", id, preferredCloud, preferredRegion);
         }
         Map<String, String> body = ImmutableMap.of(
