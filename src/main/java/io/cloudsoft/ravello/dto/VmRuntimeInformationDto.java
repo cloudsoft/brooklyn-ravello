@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class VmRuntimeInformationDto {
 
     @JsonProperty public Boolean differsFromPublished;
-    @JsonProperty public String externalFqdn;
+    @JsonProperty("externalFqdn") public String externalFullyQualifiedDomainName;
     @JsonProperty public String state;
 
     private VmRuntimeInformationDto() {
@@ -15,16 +15,16 @@ public class VmRuntimeInformationDto {
 
     public VmRuntimeInformationDto(Boolean differsFromPublished, String externalFqdn, String state) {
         this.differsFromPublished = differsFromPublished;
-        this.externalFqdn = externalFqdn;
+        this.externalFullyQualifiedDomainName = externalFqdn;
         this.state = state;
     }
 
-    public Boolean getDiffersFromPublished() {
+    public Boolean differsFromPublished() {
         return differsFromPublished;
     }
 
-    public String getExternalFqdn() {
-        return externalFqdn;
+    public String getExternalFullyQualifiedDomainName() {
+        return externalFullyQualifiedDomainName;
     }
 
     public String getState() {

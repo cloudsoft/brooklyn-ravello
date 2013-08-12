@@ -22,10 +22,13 @@ public class VmDto {
 
     public static class Builder {
         private String id;
+        private String baseVmId;
         private String name;
         private String description;
         private Integer numCpus;
         private SizeDto memorySize;
+        private String platform;
+        private List<String> hostnames;
         private VmRuntimeInformationDto runtimeInformation;
         private List<HardDriveDto> hardDrives;
         private Set<SuppliedServiceDto> suppliedServices;
@@ -33,6 +36,10 @@ public class VmDto {
 
         public Builder id(String id) {
             this.id = id;
+            return this;
+        }
+        public Builder baseVmId(String baseVmId) {
+            this.baseVmId = baseVmId;
             return this;
         }
         public Builder name(String name) {
@@ -49,6 +56,22 @@ public class VmDto {
         }
         public Builder memorySize(SizeDto memorySize) {
             this.memorySize = memorySize;
+            return this;
+        }
+        public Builder hostname(String hostname) {
+            this.hostnames = ImmutableList.of(hostname);
+            return this;
+        }
+        public Builder hostnames(List<String> hostnames) {
+            this.hostnames = ImmutableList.copyOf(hostnames);
+            return this;
+        }
+        public Builder hostnames(String... hostnames) {
+            this.hostnames = ImmutableList.copyOf(hostnames);
+            return this;
+        }
+        public Builder platform(String platform) {
+            this.platform = platform;
             return this;
         }
 
@@ -85,17 +108,21 @@ public class VmDto {
         }
 
         public VmDto build() {
-            VmPropertiesDto properties = new VmPropertiesDto(id, name, description, numCpus, memorySize, runtimeInformation);
+            VmPropertiesDto properties = new VmPropertiesDto(id, baseVmId, name, description, numCpus, memorySize,
+                    platform, hostnames, runtimeInformation);
             return new VmDto(properties, hardDrives, suppliedServices, networkConnections);
         }
 
         public Builder fromVmDto(VmDto in) {
             return this
                     .id(in.getId())
+                    .baseVmId(in.getBaseVmId())
                     .name(in.getName())
                     .description(in.getDescription())
                     .numCpus(in.getNumCpus())
                     .memorySize(in.getMemorySize())
+                    .platform(in.getPlatform())
+                    .hostnames(in.getHostnames())
                     .hardDrives(in.getHardDrives())
                     .suppliedServices(in.getSuppliedServices())
                     .networkConnections(in.getNetworkConnections());
@@ -106,6 +133,9 @@ public class VmDto {
     @JsonProperty private List<HardDriveDto> hardDrives;
     @JsonProperty private Set<SuppliedServiceDto> suppliedServices;
     @JsonProperty private List<NetworkConnectionDto> networkConnections;
+
+    // TODO
+    @JsonProperty private Integer keypairId = 34013191;
 
     private VmDto() {
         // For Jackson
@@ -135,6 +165,10 @@ public class VmDto {
         return vmProperties != null ? vmProperties.getId() : null;
     }
 
+    public String getBaseVmId() {
+        return vmProperties != null ? vmProperties.getBaseVmId() : null;
+    }
+
     public String getName() {
         return vmProperties != null ? vmProperties.getName() : null;
     }
@@ -149,6 +183,14 @@ public class VmDto {
 
     public SizeDto getMemorySize() {
         return vmProperties != null ? vmProperties.getMemorySize() : null;
+    }
+
+    public String getPlatform() {
+        return vmProperties != null ? vmProperties.getPlatform() : null;
+    }
+
+    public List<String> getHostnames() {
+        return vmProperties != null ? vmProperties.getHostnames() : null;
     }
 
     public VmRuntimeInformationDto getRuntimeInformation() {
@@ -168,28 +210,39 @@ public class VmDto {
     public static class VmPropertiesDto {
 
         @JsonProperty private String id;
+        @JsonProperty private String baseVmId;
         @JsonProperty private String name;
         @JsonProperty private String description;
         @JsonProperty private Integer numCpus;
         @JsonProperty private SizeDto memorySize;
+        @JsonProperty private List<String> hostnames;
+        @JsonProperty private String platform;
+
         @JsonProperty private VmRuntimeInformationDto runtimeInformation;
 
         private VmPropertiesDto() {
             // For Jackson
         }
 
-        private VmPropertiesDto(String id, String name, String description, Integer numCpus, SizeDto memorySize,
-                VmRuntimeInformationDto runtimeInformation) {
+        private VmPropertiesDto(String id, String baseVmId, String name, String description, Integer numCpus,
+                SizeDto memorySize, String platform, List<String> hostnames, VmRuntimeInformationDto runtimeInformation) {
             this.id = id;
+            this.baseVmId = baseVmId;
             this.name = name;
             this.description = description;
             this.numCpus = numCpus;
             this.memorySize = memorySize;
+            this.platform = platform;
+            this.hostnames = hostnames;
             this.runtimeInformation = runtimeInformation;
         }
 
         public String getId() {
             return id;
+        }
+
+        public String getBaseVmId() {
+            return baseVmId;
         }
 
         public String getName() {
@@ -208,6 +261,14 @@ public class VmDto {
             return memorySize;
         }
 
+        public String getPlatform() {
+            return platform;
+        }
+
+        public List<String> getHostnames() {
+            return hostnames;
+        }
+
         public VmRuntimeInformationDto getRuntimeInformation() {
             return runtimeInformation;
         }
@@ -216,10 +277,13 @@ public class VmDto {
         public String toString() {
             return Objects.toStringHelper(this)
                     .add("id", id)
+                    .add("baseVmId", baseVmId)
                     .add("name", name)
                     .add("description", description)
                     .add("numCpus", numCpus)
                     .add("memorySize", memorySize)
+                    .add("platform", platform)
+                    .add("hostnames", hostnames)
                     .add("runtimeInformation", runtimeInformation)
                     .toString();
         }

@@ -10,7 +10,7 @@ public class RavelloSshLocation extends SshMachineLocation {
     public RavelloSshLocation(VmDto ownedVM) {
         super();
         this.vm = ownedVM;
-        setConfig(SSH_HOST, vm.getRuntimeInformation().getExternalFqdn());
+        setConfig(SSH_HOST, vm.getRuntimeInformation().getExternalFullyQualifiedDomainName());
         // TODO: Get port from suppliedServices ssh service
         setConfig(SSH_PORT, 22);
     }

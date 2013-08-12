@@ -28,7 +28,6 @@ import io.cloudsoft.ravello.dto.VmDto;
 @Test(groups = "live")
 public class ApplicationImplLiveTest extends LiveTest {
 
-    // TODO: Add tests to live group
     // TODO: Confirm applications always deleted.
 
     final ApplicationApi appApi = ravello.getApplicationApi();
@@ -39,28 +38,30 @@ public class ApplicationImplLiveTest extends LiveTest {
 
     /** Makes an ApplicationDto with one VM. */
     private ApplicationDto makeTestApplication() {
+        String vmNameAndHostname = nameFor("vm");
         VmDto appVm = VmDto.builder()
-                .name(nameFor("vm"))
+                .baseVmId("1671271")
+                .name(vmNameAndHostname)
                 .description("Test VM")
                 .numCpus(1)
                 .memorySize(SizeDto.gigabytes(1))
+                .hostname(vmNameAndHostname)
                 .hardDrives(HardDriveDto.builder()
                         .name(nameFor("hard-drive"))
                         .size(SizeDto.gigabytes(20))
-                        .controller("ide")
+                        .controller("virtio")
                         .boot(true)
                         .index(0)
                         .controllerPciSlot(0)
                         .controllerIndex(0)
-                        .peripheral(true)
                         .build())
-//                .networkConnections(NetworkConnectionDto.builder()
-//                        .name(nameFor("networkConnection"))
-//                        .accessPort(true)
-//                        .device(NetworkDeviceDto.builder().useAutomaticMac().deviceType("virtio").index(0).build())
-//                        .ipConfig(new IpConfigDto())
-//                        .build())
-//                .suppliedServices(SuppliedServiceDto.SSH_SERVICE)
+                .networkConnections(NetworkConnectionDto.builder()
+                        .name(nameFor("networkConnection"))
+                        .accessPort(true)
+                        .device(NetworkDeviceDto.builder().useAutomaticMac().deviceType("virtio").index(0).build())
+                        .ipConfig(new IpConfigDto())
+                        .build())
+                .suppliedServices(SuppliedServiceDto.SSH_SERVICE)
                 .build();
         return ApplicationDto.builder()
                 .name(nameFor("app"))
