@@ -29,7 +29,10 @@ public class VmDto {
         private SizeDto memorySize;
         private String platform;
         private List<String> hostnames;
+        private Boolean requiresKeypair;
+        private String keypairId;
         private VmRuntimeInformationDto runtimeInformation;
+
         private List<HardDriveDto> hardDrives;
         private Set<SuppliedServiceDto> suppliedServices;
         private List<NetworkConnectionDto> networkConnections;
@@ -74,6 +77,14 @@ public class VmDto {
             this.platform = platform;
             return this;
         }
+        public Builder requiresKeypair(Boolean requiresKeypair) {
+            this.requiresKeypair = requiresKeypair;
+            return this;
+        }
+        public Builder keypairId(String keypairId) {
+            this.keypairId = keypairId;
+            return this;
+        }
 
         /** Only visible for {@link io.cloudsoft.ravello.client.RavelloApiLocalImpl} */
         @VisibleForTesting
@@ -109,7 +120,7 @@ public class VmDto {
 
         public VmDto build() {
             VmPropertiesDto properties = new VmPropertiesDto(id, baseVmId, name, description, numCpus, memorySize,
-                    platform, hostnames, runtimeInformation);
+                    platform, hostnames, requiresKeypair, keypairId, runtimeInformation);
             return new VmDto(properties, hardDrives, suppliedServices, networkConnections);
         }
 
@@ -134,9 +145,6 @@ public class VmDto {
     @JsonProperty private Set<SuppliedServiceDto> suppliedServices;
     @JsonProperty private List<NetworkConnectionDto> networkConnections;
 
-    // TODO
-    @JsonProperty private Integer keypairId = 34013191;
-
     private VmDto() {
         // For Jackson
     }
@@ -160,6 +168,8 @@ public class VmDto {
     public List<NetworkConnectionDto> getNetworkConnections() {
         return networkConnections;
     }
+
+    // Methods also on vmProperties:
 
     public String getId() {
         return vmProperties != null ? vmProperties.getId() : null;
@@ -193,6 +203,14 @@ public class VmDto {
         return vmProperties != null ? vmProperties.getHostnames() : null;
     }
 
+    public Boolean requiresKeypair() {
+        return vmProperties != null ? vmProperties.requiresKeypair() : null;
+    }
+
+    public String getKeypairId() {
+        return vmProperties != null ? vmProperties.getKeypairId() : null;
+    }
+
     public VmRuntimeInformationDto getRuntimeInformation() {
         return vmProperties != null ? vmProperties.getRuntimeInformation() : null;
     }
@@ -217,6 +235,16 @@ public class VmDto {
         @JsonProperty private SizeDto memorySize;
         @JsonProperty private List<String> hostnames;
         @JsonProperty private String platform;
+        @JsonProperty private Boolean requiresKeypair;
+
+        /**
+         * The docs say this is optional but the API always sets it to false if it's missing,
+         * whatever the value of the property on the baseVmId.
+         */
+        @JsonProperty private Boolean supportsCloudInit = true;
+
+        /** Docs say this should be on VmDto, but it's only accepted from the properties. */
+        @JsonProperty private String keypairId;
 
         @JsonProperty private VmRuntimeInformationDto runtimeInformation;
 
@@ -225,7 +253,8 @@ public class VmDto {
         }
 
         private VmPropertiesDto(String id, String baseVmId, String name, String description, Integer numCpus,
-                SizeDto memorySize, String platform, List<String> hostnames, VmRuntimeInformationDto runtimeInformation) {
+                SizeDto memorySize, String platform, List<String> hostnames, Boolean requiresKeypair,
+                String keypairId, VmRuntimeInformationDto runtimeInformation) {
             this.id = id;
             this.baseVmId = baseVmId;
             this.name = name;
@@ -234,6 +263,8 @@ public class VmDto {
             this.memorySize = memorySize;
             this.platform = platform;
             this.hostnames = hostnames;
+            this.keypairId = keypairId;
+            this.requiresKeypair = requiresKeypair;
             this.runtimeInformation = runtimeInformation;
         }
 
@@ -269,6 +300,14 @@ public class VmDto {
             return hostnames;
         }
 
+        public Boolean requiresKeypair() {
+            return requiresKeypair;
+        }
+
+        public String getKeypairId() {
+            return keypairId;
+        }
+
         public VmRuntimeInformationDto getRuntimeInformation() {
             return runtimeInformation;
         }
@@ -284,6 +323,8 @@ public class VmDto {
                     .add("memorySize", memorySize)
                     .add("platform", platform)
                     .add("hostnames", hostnames)
+                    .add("requiresKeypair", requiresKeypair)
+                    .add("keypairId", keypairId)
                     .add("runtimeInformation", runtimeInformation)
                     .toString();
         }

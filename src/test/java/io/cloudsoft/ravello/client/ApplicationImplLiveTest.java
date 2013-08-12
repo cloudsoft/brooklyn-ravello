@@ -11,9 +11,6 @@ import java.util.UUID;
 
 import org.testng.annotations.Test;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
 import io.cloudsoft.ravello.api.ApplicationApi;
 import io.cloudsoft.ravello.dto.ApplicationDto;
 import io.cloudsoft.ravello.dto.ApplicationDto.ApplicationPropertiesDto;
@@ -46,6 +43,8 @@ public class ApplicationImplLiveTest extends LiveTest {
                 .numCpus(1)
                 .memorySize(SizeDto.gigabytes(1))
                 .hostname(vmNameAndHostname)
+                .keypairId("34013191")
+                .requiresKeypair(true)
                 .hardDrives(HardDriveDto.builder()
                         .name(nameFor("hard-drive"))
                         .size(SizeDto.gigabytes(20))
