@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -30,10 +29,10 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
@@ -73,68 +72,76 @@ public class RavelloHttpClient {
         return this;
     }
 
-    public HttpResponse get(String uri) {
-        return doRequest(new HttpGet(endpoint + uri));
+    public void get(String uri) {
+        doRequest(new HttpGet(endpoint + uri));
     }
 
     public <T> T get(String uri, Class<T> unmarshalAs) {
-        HttpResponse response = get(uri);
-        return unmarshalResponseEntity(response, MAPPER.constructType(unmarshalAs));
+        return doRequest(new HttpGet(endpoint + uri), unmarshalAs);
     }
 
     public <T> List<T> getList(String uri, Class<T> unmarshalAs) {
-        HttpResponse response = get(uri);
-        return unmarshalResponseEntity(response,
-                MAPPER.getTypeFactory().constructCollectionType(List.class, unmarshalAs));
+        JavaType collectionType = MAPPER.getTypeFactory().constructCollectionType(List.class, unmarshalAs);
+        return doRequest(new HttpGet(endpoint + uri), Optional.of(collectionType));
     }
 
-    public HttpResponse post(String uri) {
-        return post(uri, Optional.absent());
+    public void post(String uri) {
+        doRequest(new HttpPost(endpoint + uri));
     }
 
-    public HttpResponse post(String uri, Object body) {
-        return post(uri, Optional.fromNullable(body));
-    }
-
-    private HttpResponse post(String uri, Optional<Object> body) {
+    public void post(String uri, Object body) {
         HttpPost request = new HttpPost(endpoint+uri);
-        if (body.isPresent()) {
-            attachEntityToRequest(request, body.get());
-        }
-        return doRequest(request);
+        attachEntityToRequest(request, checkNotNull(body, "body"));
+        doRequest(request, Optional.<JavaType>absent());
     }
 
     public <T> T post(String uri, Object body, Class<T> unmarshalAs) {
-        HttpResponse response = post(uri, body);
-        return unmarshalResponseEntity(response, MAPPER.constructType(unmarshalAs));
+        HttpPost request = new HttpPost(endpoint+uri);
+        attachEntityToRequest(request, checkNotNull(body, "body"));
+        return doRequest(request, unmarshalAs);
     }
 
     public <T> T put(String uri, Object body, Class<T> unmarshalAs) {
-        HttpResponse response = post(uri, body);
-        return unmarshalResponseEntity(response, MAPPER.constructType(unmarshalAs));
-    }
-
-    public HttpResponse put(String uri, Object body) {
-        HttpPut request = new HttpPut(endpoint+uri);
+        HttpPut request = new HttpPut(endpoint+checkNotNull(uri, "uri"));
         attachEntityToRequest(request, checkNotNull(body, "body"));
-        return doRequest(request);
+        return doRequest(request, unmarshalAs);
     }
 
-    public HttpResponse delete(String uri) {
-        return doRequest(new HttpDelete(endpoint+uri));
+    public void put(String uri, Object body) {
+        HttpPut request = new HttpPut(endpoint+checkNotNull(uri, "uri"));
+        attachEntityToRequest(request, checkNotNull(body, "body"));
+        doRequest(request);
     }
 
-    private HttpResponse doRequest(HttpRequestBase request) {
+    public void delete(String uri) {
+        doRequest(new HttpDelete(endpoint+uri));
+    }
+
+    private <T> T doRequest(HttpRequestBase request) {
+        return doRequest(request, Optional.<JavaType>absent());
+    }
+
+    private <T> T doRequest(HttpRequestBase request, Class<T> unmarshalAs) {
+        return doRequest(request, Optional.of(MAPPER.constructType(unmarshalAs)));
+    }
+
+    private <T> T doRequest(HttpRequestBase request, Optional<JavaType> unmarshalAs) {
         request.addHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType());
         LOG.info(request.toString());
         try {
             HttpResponse response = httpClient.execute(request);
             LOG.info(response.toString());
+            T responseEntity = null;
             if (isErrorResponse(response)) {
                 String out = getResponseContentAsString(response);
                 LOG.error(out.equals("") ? "(No response content)" : out);
+            } else {
+                if (unmarshalAs.isPresent()) {
+                    responseEntity = unmarshalResponseEntity(response, unmarshalAs.get());
+                }
+                EntityUtils.consume(response.getEntity());
             }
-            return response;
+            return responseEntity;
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
@@ -177,7 +184,10 @@ public class RavelloHttpClient {
         String responseContent = getResponseContentAsString(response);
         LOG.info(responseContent);
         try {
-            return MAPPER.readValue(responseContent, type);
+            T unmarshalled = MAPPER.readValue(responseContent, type);
+            LOG.info(unmarshalled.toString());
+            EntityUtils.consume(response.getEntity());
+            return unmarshalled;
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
