@@ -17,6 +17,7 @@ import org.testng.annotations.Test;
 import com.google.common.collect.Maps;
 
 import brooklyn.config.BrooklynProperties;
+import brooklyn.location.LocationSpec;
 import brooklyn.location.basic.SshMachineLocation;
 import brooklyn.management.internal.LocalManagementContext;
 import brooklyn.util.collections.MutableMap;
@@ -26,21 +27,25 @@ public class RavelloLocationProvisionTest {
     private static final Logger LOG = LoggerFactory.getLogger(RavelloLocationProvisionTest.class);
     
     private LocalManagementContext managementContext;
+    private RavelloLocation location;
 
     @BeforeMethod(alwaysRun=true)
     public void setUp() throws Exception {
         BrooklynProperties properties = BrooklynProperties.Factory.newDefault();
         managementContext = new LocalManagementContext(properties);
+        location = (RavelloLocation) managementContext.getLocationRegistry().resolve("ravello");
     }
 
     @AfterMethod(alwaysRun=true)
     public void tearDown() throws Exception {
+        // Believe it's enough to simply delete the entire application.
+        // There's no need to release ssh locations separately.
+        if (location != null) location.deleteApplicationModel();
         if (managementContext != null) managementContext.terminate();
     }
 
     @Test(groups="Live")
     public void testObtainRavelloLocation() throws Exception {
-        RavelloLocation location = resolve();
         assertNotNull(location);
         RavelloSshLocation sshLocation = location.obtain();
         assertNotNull(sshLocation);
@@ -48,21 +53,14 @@ public class RavelloLocationProvisionTest {
 
     @Test(groups="Live")
     public void testObtainRavelloLocationAndRunSshCommand() throws Exception {
-        RavelloLocation location = resolve();
         RavelloSshLocation sshLocation = location.obtain();
-        try {
-            Map details = MutableMap.of(
-                    "hostname", sshLocation.getAddress().getHostAddress(),
-                    "user", sshLocation.getUser());
-            LOG.info("Got "+sshLocation+" at "+location+": "+details+". Now running commands over SSH.");
+        Map details = MutableMap.of(
+                "hostname", sshLocation.getAddress().getHostAddress(),
+                "user", sshLocation.getUser());
+        LOG.info("Got "+sshLocation+" at "+location+": "+details+". Now running commands over SSH.");
 
-            // echo conflates spaces of arguments
-            String result = execWithOutput(sshLocation, Arrays.asList("echo trying sshLocation", "hostname", "date"));
-            assertTrue(result.contains("trying sshLocation"));
-
-        } finally {
-            location.release(sshLocation);
-        }
+        String result = execWithOutput(sshLocation, Arrays.asList("echo trying sshLocation", "hostname", "date"));
+        assertTrue(result.contains("trying sshLocation"));
     }
 
     private String execWithOutput(SshMachineLocation m, List<String> commands) {
@@ -76,7 +74,4 @@ public class RavelloLocationProvisionTest {
         return new String(stdout.toByteArray());
     }
 
-    private RavelloLocation resolve() {
-        return (RavelloLocation) managementContext.getLocationRegistry().resolve("ravello");
-    }
 }

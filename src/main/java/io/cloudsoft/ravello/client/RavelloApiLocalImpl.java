@@ -69,10 +69,11 @@ public class RavelloApiLocalImpl implements RavelloApi {
         @Override
         public ApplicationDto update(String id, ApplicationDto application) {
             checkArgument(applications.containsKey(id));
-            checkArgument(application.getVersion() > applications.get(id).getVersion());
 
             // Modify all VMs in application to point at localhost
-            ApplicationDto.Builder modifiedApp = application.toBuilder().vms();
+            ApplicationDto.Builder modifiedApp = application.toBuilder()
+                    .incrementVersion()
+                    .vms();
             for (VmDto vm : application.getVMs()) {
                 VmDto localhostVM = vm.toBuilder()
                         .id(vm.getId() == null ? Identifiers.makeRandomId(8) : vm.getId())

@@ -4,10 +4,13 @@ Linking Brooklyn and Ravello.
 
 Required properties:
 
-```ravello.username
-ravello.password```
+```
+ravello.username
+ravello.password
+ravello.privateKeyFile
+ravello.privateKeyId
+```
 
-Give these as `-D` parameters to `mvn`.
+The privateKeyId value should be the ID given by Ravello to the key contained in privateKeyFile. Find this by making a GET to https://cloud.ravellosystems.com/services/keypairs.
 
-In brooklyn.properties:
-`brooklyn.location.named.ravello.<prop> = <value>`
+Give these as `-D` parameters to `mvn`, or in brooklyn.properties in format `brooklyn.location.named.ravello.<prop> = <value>`

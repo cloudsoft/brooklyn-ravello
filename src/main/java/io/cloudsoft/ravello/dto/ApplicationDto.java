@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -144,6 +145,15 @@ public class ApplicationDto {
         return properties;
     }
 
+    @Override
+    public String toString() {
+        return Objects.toStringHelper(this)
+                .add("properties", properties)
+                .add("version", version)
+                .omitNullValues()
+                .toString();
+    }
+
     public static class ApplicationPropertiesDto {
 
         @JsonProperty private String id;
@@ -176,6 +186,17 @@ public class ApplicationDto {
 
         public Boolean isPublished() {
             return published != null && published;
+        }
+
+        @Override
+        public String toString() {
+            return Objects.toStringHelper(this)
+                    .add("id", id)
+                    .add("name", name)
+                    .add("description", description)
+                    .add("published", published)
+                    .omitNullValues()
+                    .toString();
         }
     }
 
