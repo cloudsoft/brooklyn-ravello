@@ -80,8 +80,8 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
                 applicationModel = createEmptyApplication();
             }
 
-            LOG.info("App {} before update: {}", applicationModel.getId(), applicationModel);
             // Update the app
+            LOG.info("Adding new VM to {}: {}", applicationModel, newMachine);
             ApplicationDto forUpdate = applicationModel.toBuilder()
                     .addVm(newMachine)
                     .build();
@@ -103,7 +103,7 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
                     return input.getName().equals(newMachine.getName());
                 }
             });
-            LOG.info("App {} after update: {}", applicationModel.getId(), applicationModel);
+            LOG.trace("App {} after update: {}", applicationModel.getId(), applicationModel);
         }
 
         LOG.info("Created new VM: " + created);
@@ -146,7 +146,7 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
                 ravello.getApplicationApi().update(appId, forUpdate);
                 ravello.getApplicationApi().publishUpdates(appId);
                 applicationModel = ravello.getApplicationApi().get(appId);
-                LOG.info("Removed {} from application. New model: {}", machine, applicationModel);
+                LOG.trace("Removed {} from application. New model: {}", machine, applicationModel);
             }
         }
     }

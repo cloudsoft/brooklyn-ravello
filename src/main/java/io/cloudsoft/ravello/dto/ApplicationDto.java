@@ -3,8 +3,10 @@ package io.cloudsoft.ravello.dto;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -113,10 +115,11 @@ public class ApplicationDto {
     protected ApplicationDto(String id, String name, String description, Boolean published, Integer version,
             List<VmDto> vms) {
         this.properties = new ApplicationPropertiesDto(id, name, description, published);
-        this.virtualMachines = vms == null ? null : ImmutableList.copyOf(vms);
+        this.virtualMachines = vms == null ? Collections.<VmDto>emptyList() : ImmutableList.copyOf(vms);
         this.version = version == null ? 0 : version;
     }
 
+    @Nonnull
     public List<VmDto> getVMs() {
         return virtualMachines;
     }
@@ -137,6 +140,7 @@ public class ApplicationDto {
         return this.version;
     }
 
+    @Nonnull
     public Boolean isPublished() {
         return properties != null && properties.isPublished();
     }
@@ -150,6 +154,7 @@ public class ApplicationDto {
         return Objects.toStringHelper(this)
                 .add("properties", properties)
                 .add("version", version)
+                .add("#vms", virtualMachines.size())
                 .omitNullValues()
                 .toString();
     }

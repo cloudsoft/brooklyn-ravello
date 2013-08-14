@@ -46,7 +46,7 @@ public class RavelloHttpClient {
     private static final Logger LOG = LoggerFactory.getLogger(RavelloHttpClient.class);
 
     /**
-     * TODO: logging granularity. exception handling.
+     * TODO: exception handling.
      */
 
     private static final ObjectMapper MAPPER = RavelloObjectMapper.newObjectMapper();
@@ -63,13 +63,12 @@ public class RavelloHttpClient {
         setCredentials(username, password);
     }
 
-    private RavelloHttpClient setCredentials(String username, String password) {
+    private void setCredentials(String username, String password) {
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(
                 new AuthScope(endpoint.getHost(), AuthScope.ANY_PORT),
                 new UsernamePasswordCredentials(username, password));
         httpClient.setCredentialsProvider(credentialsProvider);
-        return this;
     }
 
     public void get(String uri) {
@@ -117,8 +116,8 @@ public class RavelloHttpClient {
         doRequest(new HttpDelete(endpoint+uri));
     }
 
-    private <T> T doRequest(HttpRequestBase request) {
-        return doRequest(request, Optional.<JavaType>absent());
+    private void doRequest(HttpRequestBase request) {
+        doRequest(request, Optional.<JavaType>absent());
     }
 
     private <T> T doRequest(HttpRequestBase request, Class<T> unmarshalAs) {
@@ -127,15 +126,16 @@ public class RavelloHttpClient {
 
     private <T> T doRequest(HttpRequestBase request, Optional<JavaType> unmarshalAs) {
         request.addHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType());
-        LOG.info(request.toString());
+        LOG.debug("Requesting: " + request);
         try {
             HttpResponse response = httpClient.execute(request);
-            LOG.info(response.toString());
             T responseEntity = null;
             if (isErrorResponse(response)) {
+                LOG.warn("Request errored: " + response.toString());
                 String out = getResponseContentAsString(response);
-                LOG.error(out.equals("") ? "(No response content)" : out);
+                LOG.warn(out.equals("") ? "(No response body)" : out);
             } else {
+                LOG.debug(response.toString());
                 if (unmarshalAs.isPresent()) {
                     responseEntity = unmarshalResponseEntity(response, unmarshalAs.get());
                 }
@@ -155,7 +155,7 @@ public class RavelloHttpClient {
             throw Throwables.propagate(e);
         }
 
-        LOG.info("Marshalled "+entity.getClass().getSimpleName()+": " + writer.toString());
+        LOG.trace("Marshalled "+entity.getClass().getSimpleName()+": " + writer.toString());
         HttpEntity httpEntity = new StringEntity(writer.toString(), ContentType.APPLICATION_JSON);
         request.setEntity(httpEntity);
     }
@@ -176,17 +176,19 @@ public class RavelloHttpClient {
 
     private <T> T unmarshalResponseEntity(HttpResponse response, JavaType type) {
         if (isErrorResponse(response)) {
-            LOG.info("Request errored[{}], not unmarshalling to {}",
+            LOG.debug("Request errored[{}], not unmarshalling to {}",
                     response.getStatusLine().getStatusCode(), type.getGenericSignature());
             return null;
         }
-        LOG.info("Unmarshalling response to " + type.getGenericSignature());
+
         String responseContent = getResponseContentAsString(response);
-        LOG.info(responseContent);
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("Unmarshalling response to " + type.getGenericSignature());
+            LOG.trace(responseContent);
+        }
         try {
             T unmarshalled = MAPPER.readValue(responseContent, type);
             LOG.info(unmarshalled.toString());
-            EntityUtils.consume(response.getEntity());
             return unmarshalled;
         } catch (IOException e) {
             throw Throwables.propagate(e);
