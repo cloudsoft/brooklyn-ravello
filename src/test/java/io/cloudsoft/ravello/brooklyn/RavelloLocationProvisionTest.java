@@ -44,14 +44,14 @@ public class RavelloLocationProvisionTest {
         if (managementContext != null) managementContext.terminate();
     }
 
-    @Test(groups="Live")
+    @Test(groups="live")
     public void testObtainRavelloLocation() throws Exception {
         assertNotNull(location);
         RavelloSshLocation sshLocation = location.obtain();
         assertNotNull(sshLocation);
     }
 
-    @Test(groups="Live")
+    @Test(groups="live")
     public void testObtainRavelloLocationAndRunSshCommand() throws Exception {
         RavelloSshLocation sshLocation = location.obtain();
         Map details = MutableMap.of(

@@ -188,7 +188,7 @@ public class RavelloHttpClient {
         }
         try {
             T unmarshalled = MAPPER.readValue(responseContent, type);
-            LOG.info(unmarshalled.toString());
+            if (LOG.isTraceEnabled()) LOG.trace("Unmarshalled: " + unmarshalled.toString());
             return unmarshalled;
         } catch (IOException e) {
             throw Throwables.propagate(e);

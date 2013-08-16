@@ -152,7 +152,9 @@ public class ApplicationDto {
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("properties", properties)
+                .add("id", getId())
+                .add("name", getName())
+                .add("published", isPublished())
                 .add("version", version)
                 .add("#vms", virtualMachines.size())
                 .omitNullValues()

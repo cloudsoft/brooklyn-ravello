@@ -55,7 +55,7 @@ public class RavelloLocationResolver implements LocationResolver {
         ravelloProperties.putAll(locationFlags);
         LOG.info("Making RavelloLocation for: " + ravelloProperties);
         RavelloLocation created = managementContext.getLocationManager()
-                .createLocation(LocationSpec.spec(RavelloLocation.class).configure(ravelloProperties));
+                .createLocation(LocationSpec.create(RavelloLocation.class).configure(ravelloProperties));
         return created;
     }
 

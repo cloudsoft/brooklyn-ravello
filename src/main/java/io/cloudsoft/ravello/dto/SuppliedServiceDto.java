@@ -82,6 +82,33 @@ public class SuppliedServiceDto {
         this.globalService = globalService;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getListenIp() {
+        return listenIp;
+    }
+
+    public String getPortRange() {
+        return portRange;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public Boolean getGlobalService() {
+        return globalService;
+    }
 
     @Override
     public String toString() {
