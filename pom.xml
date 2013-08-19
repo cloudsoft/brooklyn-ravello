@@ -20,8 +20,8 @@
         <surefire.version>2.13</surefire.version>
         <mockito.version>1.9.5</mockito.version>
 
-        <includedTestGroups>integration,live</includedTestGroups>
-        <excludedTestGroups/>
+        <includedTestGroups/>
+        <excludedTestGroups>live</excludedTestGroups>
     </properties>
 
     <dependencies>
