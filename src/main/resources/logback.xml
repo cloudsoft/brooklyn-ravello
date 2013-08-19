@@ -1,0 +1,20 @@
+<configuration>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>brooklyn-ravello.log</file>
+        <append>true</append>
+        <encoder>
+            <pattern>%d %-5level %logger{30} [%thread{15}]: %msg%n</pattern>
+        </encoder>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>TRACE</level>
+        </filter>
+    </appender>
+
+    <include resource="brooklyn/logback-stdout.xml"/>
+    <include resource="brooklyn/logback-excludes.xml"/>
+    <include resource="brooklyn/logback-favs.xml"/>
+
+    <logger name="io.cloudsoft.ravello" level="TRACE"/>
+
+</configuration>
