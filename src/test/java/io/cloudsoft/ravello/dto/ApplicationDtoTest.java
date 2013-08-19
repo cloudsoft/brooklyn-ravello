@@ -4,6 +4,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.testng.annotations.Test;
@@ -36,7 +37,7 @@ public class ApplicationDtoTest extends MarshallingTest {
         assertEquals(app.getName(), "xyz");
         assertNull(app.getDescription());
         assertNull(app.getId());
-        assertNull(app.getVMs());
+        assertEquals(app.getVMs(), Collections.emptyList());
         assertEquals(app.getVersion(), 0);
     }
 

@@ -42,10 +42,10 @@ public class RavelloLocationApplicationManager {
 
     private final RavelloApi ravello;
     private final String privateKeyId;
-    private final int publicationPause;
+    private final long publicationPause;
+    private final TimeUnit publicationPauseTimeUnit;
 
     // Accesses to these fields should be synchronised
-
     /**
      * Holds the current representation of the application. This should mirror the object returned
      * by a GET to /..ravello../applications/:id, but might NOT represent the true published application.
@@ -54,14 +54,21 @@ public class RavelloLocationApplicationManager {
     private final List<CountDownLatch> latchesAwaitingAPublication = Lists.newLinkedList();
     private int publishCount = 0;
 
+    /** Creates an application manager that waits for twenty seconds before publishing updates */
     RavelloLocationApplicationManager(RavelloApi ravelloApi, String privateKeyId) {
         this(ravelloApi, privateKeyId, 20);
     }
 
-    RavelloLocationApplicationManager(RavelloApi ravelloApi, String privateKeyId, int publicationPause) {
+    /** Creates an application manager that waits publicationPause seconds before publishing updates */
+    RavelloLocationApplicationManager(RavelloApi ravelloApi, String privateKeyId, long publicationPause) {
+        this(ravelloApi, privateKeyId, publicationPause, TimeUnit.SECONDS);
+    }
+
+    RavelloLocationApplicationManager(RavelloApi ravelloApi, String privateKeyId, long publicationPause, TimeUnit timeUnit) {
         this.ravello = ravelloApi;
         this.privateKeyId = privateKeyId;
         this.publicationPause = publicationPause;
+        this.publicationPauseTimeUnit = timeUnit;
     }
 
     public VmDto createNewPublishedVM(Collection<?> inboundPorts) {
@@ -119,7 +126,7 @@ public class RavelloLocationApplicationManager {
                 synchronized (RavelloLocationApplicationManager.this) {
                     // Chance application was deleted before the task ran
                     if (applicationModel == null) {
-                        LOG.info("Publish task running but applicationModel null");
+                        LOG.info("Publish task running but applicationModel null. The application was probably deleted.");
                         return;
                     }
                     String appId = applicationModel.getId();
@@ -151,19 +158,19 @@ public class RavelloLocationApplicationManager {
             }
         };
 
-        LOG.info("Scheduling publication of app[{}] for {} seconds time", applicationModel.getId(), publicationPause);
-        updateManager.schedule(publisher, publicationPause, TimeUnit.SECONDS);
+        LOG.info("Scheduling publication of app[{}] for {} {} time", applicationModel.getId(), publicationPause, publicationPauseTimeUnit.name().toLowerCase());
+        updateManager.schedule(publisher, publicationPause, publicationPauseTimeUnit);
         return publishedLatch;
     }
 
-    public void release(RavelloSshLocation machine) {
-        LOG.info("Removing machine with VM: " + machine.getVm());
+    public void release(VmDto vm) {
+        LOG.info("Removing VM: " + vm);
         CountDownLatch publishedLatch;
         synchronized (this) {
             String appId = applicationModel.getId();
             ApplicationDto forUpdate = ApplicationDto.builder()
                     .fromApplicationDto(applicationModel)
-                    .removeVm(machine.getVm().getId())
+                    .removeVm(vm.getId())
                     .build();
             // Kill application entirely if no VMs remain.
             if (forUpdate.getVMs().isEmpty()) {
@@ -174,13 +181,13 @@ public class RavelloLocationApplicationManager {
                 ravello.getApplicationApi().update(appId, forUpdate);
                 publishedLatch = submitPublishTask();
                 applicationModel = ravello.getApplicationApi().get(appId);
-                LOG.trace("Removed {} from app[{}]. New model: {}", machine, appId, applicationModel);
+                LOG.trace("Removed {} from app[{}]. New model: {}", vm, appId, applicationModel);
             }
         }
         try {
             publishedLatch.await();
         } catch (InterruptedException e) {
-            LOG.warn("Wait for publishedLatch interrupted. Can't guarantee VM has been released: "+machine, e);
+            LOG.warn("Wait for publishedLatch interrupted. Can't guarantee VM has been released: "+vm, e);
         }
     }
 
@@ -281,7 +288,7 @@ public class RavelloLocationApplicationManager {
         }
 
         if (!Iterables.any(services, isSshProtocolService)) {
-            LOG.warn("New VM does not have an SSH service. This won't end well!");
+            LOG.warn("New VM does not have an SSH service.");
         }
 
         return services;

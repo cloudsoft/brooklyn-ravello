@@ -126,7 +126,7 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
                 "release() given instance of " + machine.getClass().getName() + ", expected instance of " + RavelloSshLocation.class.getName());
 
         RavelloSshLocation ravelloMachine = RavelloSshLocation.class.cast(machine);
-        applicationManager.release(ravelloMachine);
+        applicationManager.release(ravelloMachine.getVm());
     }
 
     public void deleteApplicationModel() {
