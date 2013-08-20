@@ -62,15 +62,8 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
     public RavelloSshLocation obtain(Map<?, ?> flags) throws NoMachinesAvailableException {
         checkNotNull(applicationManager, "Ravello app manager has not been configured");
 
-        if (flags.isEmpty()) {
-            LOG.error("FLAGS IS EMPTY");
-        }
-        for (Map.Entry e : flags.entrySet()) {
-            LOG.error(e.getKey() + ": " + e.getValue());
-        }
-
         Collection<?> inboundPorts = Collections.emptyList();
-        if (flags.containsKey("inboundPorts")) {
+        if (flags.containsKey("inboundPorts") && flags.get("inboundPorts") instanceof Collection) {
             inboundPorts = Collection.class.cast(flags.get("inboundPorts"));
         }
 
@@ -80,8 +73,8 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
 
         // TODO: Wait for SSHable.
         //waitForReachable(created);
-        LOG.info("SLEEPING FOR EIGHT MINUTES");
-        try { Thread.sleep(1000*60*8); } catch (InterruptedException e) {}
+        LOG.info("SLEEPING FOR TEN MINUTES");
+        try { Thread.sleep(1000*60*10); } catch (InterruptedException e) {}
 
         String hostname = created.getRuntimeInformation().getExternalFullyQualifiedDomainName();
         return getManagementContext().getLocationManager().createLocation(LocationSpec.create(RavelloSshLocation.class)
