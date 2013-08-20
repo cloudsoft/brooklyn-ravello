@@ -8,7 +8,8 @@ import com.google.common.collect.Maps;
 /** Placeholder class that always uses autoIpConfig. */
 public class IpConfigDto {
 
-    @JsonProperty
-    Map<String, String> autoIpConfig = Maps.newHashMap();
+    @JsonProperty private Long id;
+    @JsonProperty private Map<String, String> autoIpConfig = Maps.newHashMap();
+    @JsonProperty private Boolean hasPublicIP;
 
 }

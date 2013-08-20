@@ -34,6 +34,7 @@ public class ApplicationDto {
         private String description;
         private Integer version;
         private Boolean published;
+        private NetworkDto network;
 
         public Builder id(String id) {
             this.id = id;
@@ -83,15 +84,20 @@ public class ApplicationDto {
             this.version += 1;
             return this;
         }
+        public Builder network(NetworkDto network) {
+            this.network = network;
+            return this;
+        }
 
         public ApplicationDto build() {
-            return new ApplicationDto(id, name, description, published, version, vms);
+            return new ApplicationDto(id, name, description, published, version, vms, network);
         }
 
         public Builder fromApplicationDto(ApplicationDto in) {
             return this.id(in.getId())
                 .name(in.getName())
                 .description(in.getDescription())
+                .network(in.getNetwork())
                 .published(in.isPublished())
                 .version(in.getVersion())
                 .vms(in.getVMs());
@@ -105,6 +111,9 @@ public class ApplicationDto {
     @JsonProperty("vms")
     private List<VmDto> virtualMachines = new ArrayList<VmDto>();
 
+    @JsonProperty
+    private NetworkDto network;
+
     /** Defaults to zero */
     @JsonProperty private int version;
 
@@ -113,15 +122,20 @@ public class ApplicationDto {
     }
 
     protected ApplicationDto(String id, String name, String description, Boolean published, Integer version,
-            List<VmDto> vms) {
+            List<VmDto> vms, NetworkDto network) {
         this.properties = new ApplicationPropertiesDto(id, name, description, published);
         this.virtualMachines = vms == null ? Collections.<VmDto>emptyList() : ImmutableList.copyOf(vms);
         this.version = version == null ? 0 : version;
+        this.network = network;
     }
 
     @Nonnull
     public List<VmDto> getVMs() {
         return virtualMachines;
+    }
+
+    public NetworkDto getNetwork() {
+        return network;
     }
 
     public String getName() {
@@ -157,6 +171,7 @@ public class ApplicationDto {
                 .add("published", isPublished())
                 .add("version", version)
                 .add("#vms", virtualMachines.size())
+                .add("network", network)
                 .omitNullValues()
                 .toString();
     }

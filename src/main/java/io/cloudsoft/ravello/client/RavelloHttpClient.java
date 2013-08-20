@@ -183,7 +183,6 @@ public class RavelloHttpClient {
 
         String responseContent = getResponseContentAsString(response);
         if (LOG.isTraceEnabled()) {
-            LOG.trace("Unmarshalling response to " + type.getGenericSignature());
             LOG.trace(responseContent);
         }
         try {
