@@ -6,12 +6,14 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.Closeables;
 
 import brooklyn.location.LocationSpec;
 import brooklyn.location.NoMachinesAvailableException;
@@ -19,10 +21,10 @@ import brooklyn.location.basic.SshMachineLocation;
 import brooklyn.location.cloud.AbstractCloudMachineProvisioningLocation;
 import brooklyn.util.collections.MutableMap;
 import brooklyn.util.flags.SetFromFlag;
+import brooklyn.util.internal.Repeater;
+import brooklyn.util.time.Time;
 import io.cloudsoft.ravello.api.RavelloApi;
 import io.cloudsoft.ravello.client.RavelloApiImpl;
-import io.cloudsoft.ravello.client.RavelloApiLocalImpl;
-import io.cloudsoft.ravello.dto.ApplicationDto;
 import io.cloudsoft.ravello.dto.VmDto;
 
 public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
@@ -50,7 +52,6 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         String privateKeyId = (String) checkNotNull(properties.get("privateKeyId"), "privateKeyId");
 
         RavelloApi ravello = new RavelloApiImpl(apiEndpoint, username, password);
-//        ravello = new RavelloApiLocalImpl();
         applicationManager = new RavelloLocationApplicationManager(ravello, privateKeyId);
     }
 
@@ -71,10 +72,7 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         VmDto created = applicationManager.createNewPublishedVM(inboundPorts);
         LOG.info("Created new VM: " + created);
 
-        // TODO: Wait for SSHable.
-        //waitForReachable(created);
-        LOG.info("SLEEPING FOR TEN MINUTES");
-        try { Thread.sleep(1000*60*10); } catch (InterruptedException e) {}
+        waitForReachable(created);
 
         String hostname = created.getRuntimeInformation().getExternalFullyQualifiedDomainName();
         return getManagementContext().getLocationManager().createLocation(LocationSpec.create(RavelloSshLocation.class)
@@ -86,31 +84,44 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
                 .configure("vm", created));
     }
 
-//    protected void waitForReachable(VmDto vm) {
-//        String hostname = vm.getRuntimeInformation().getExternalFullyQualifiedDomainName();
-//        int sshTimeout = 10 * 60 * 1000;
-//        LOG.info("Started VM. Waiting {} for it to be sshable on {}@{}",
-//                        Time.makeTimeStringRounded(sshTimeout), sshUsername, hostname);
-//
-//        boolean reachable = new Repeater()
-//            .repeat()
-//            .every(1, SECONDS)
-//            .until(new Callable<Boolean>() {
-//                public Boolean call() {
-//                    Statement statement = Statements.newStatementList(exec("hostname"));
-                    // NB this assumes passwordless sudo !
-//                    ExecResponse response = computeService.runScriptOnNode(nodeRef.getId(), statement,
-//                            overrideLoginCredentials(expectedCredentialsRef).runAsRoot(false));
-//                    return response.getExitStatus() == 0;
-//                }})
-//            .limitTimeTo(sshTimeout, MILLISECONDS)
-//            .run();
-//
-//        if (!reachable) {
-//            throw new IllegalStateException("SSH failed for "+
-//                    sshUsername+"@"+hostname+" after waiting "+Time.makeTimeStringRounded(sshTimeout));
-//        }
-//    }
+    /**
+     * Repeatedly attempts to execute a command over ssh. Returns when the command completes, throws
+     * IllegalStateException if the command was not successfully run in twenty minutes.
+     */
+    protected void waitForReachable(VmDto vm) {
+
+        final String hostname = vm.getRuntimeInformation().getExternalFullyQualifiedDomainName();
+        int sshTimeout = 20 * 60 * 1000;
+        LOG.info("Started VM. Waiting up to {} for it to be sshable on {}@{}",
+                        Time.makeTimeStringRounded(sshTimeout), sshUsername, hostname);
+
+        boolean reachable = new Repeater()
+                .repeat()
+                .every(10, TimeUnit.SECONDS)
+                .until(new Callable<Boolean>() {
+                    public Boolean call() {
+                        SshMachineLocation sshLoc = null;
+                        try {
+                            sshLoc = new SshMachineLocation(MutableMap.builder()
+                                    .put("address", hostname)
+                                    .put("user", sshUsername)
+                                    .put("privateKeyFile", privateKeyFile)
+                                    .build());
+                            int exitStatus = sshLoc.run(MutableMap.of(), "true");
+                            return exitStatus == 0;
+                        } finally {
+                            Closeables.closeQuietly(sshLoc);
+                        }
+                    }
+                })
+                .limitTimeTo(sshTimeout, TimeUnit.MILLISECONDS)
+                .run();
+
+        if (!reachable) {
+            throw new IllegalStateException("SSH failed for "+
+                    sshUsername+"@"+hostname+" after waiting "+Time.makeTimeStringRounded(sshTimeout));
+        }
+    }
 
     @Override
     public void release(SshMachineLocation machine) {

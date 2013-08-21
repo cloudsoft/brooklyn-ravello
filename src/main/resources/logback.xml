@@ -17,4 +17,7 @@
 
     <logger name="io.cloudsoft.ravello" level="TRACE"/>
 
+    <!--Avoid the hundreds of debug messages logged when waiting for machines to be reachable-->
+    <logger name="brooklyn.util.internal.ssh" level="INFO"/>
+
 </configuration>

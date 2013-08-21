@@ -17,7 +17,6 @@ import org.testng.annotations.Test;
 import com.google.common.collect.Maps;
 
 import brooklyn.config.BrooklynProperties;
-import brooklyn.location.LocationSpec;
 import brooklyn.location.basic.SshMachineLocation;
 import brooklyn.management.internal.LocalManagementContext;
 import brooklyn.util.collections.MutableMap;
