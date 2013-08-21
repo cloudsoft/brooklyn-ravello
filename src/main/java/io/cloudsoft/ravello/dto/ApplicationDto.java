@@ -10,8 +10,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
@@ -69,13 +73,41 @@ public class ApplicationDto {
         public Builder removeVm(final String id) {
             checkNotNull(id, "id");
             if (this.vms == null) return this;
+
             ImmutableList.Builder<VmDto> vms = ImmutableList.builder();
             for (VmDto vm : this.vms) {
-                if (!vm.getId().equals(id)) vms.add(vm);
+                if (!vm.getId().equals(id)) {
+                    vms.add(vm);
+                } else {
+                    removeVmFromNetworkSubnetRefs(vm);
+                }
             }
             this.vms = vms.build();
+
             return this;
         }
+
+        private void removeVmFromNetworkSubnetRefs(VmDto removed) {
+            // Need to remove the vm.networkConnections[].ipConfig.id from
+            // application.network.subnets[].networkConnectionRefs
+            if (this.network == null || removed == null) return;
+
+            final Iterable<Long> idsToRemove = FluentIterable.from(removed.getNetworkConnections())
+                    .transform(new Function<NetworkConnectionDto, Long>() {
+                        @Override public Long apply(NetworkConnectionDto input) {
+                            return input.getIpConfig() != null ? input.getIpConfig().getId() : null;
+                        }})
+                    .filter(Predicates.notNull());
+
+            List<SubnetDto> revisedSubnets = Lists.transform(this.network.getSubnets(), new Function<SubnetDto, SubnetDto>() {
+                @Override public SubnetDto apply(SubnetDto input) {
+                    return input.toBuilder().removeNetworkConnectionRefs(idsToRemove).build();
+                }
+            });
+
+            network(this.network.toBuilder().subnets(revisedSubnets).build());
+        }
+
         public Builder version(Integer version) {
             this.version = version;
             return this;

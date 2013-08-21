@@ -57,7 +57,7 @@ public class NetworkConnectionDto {
         // For Jackson
     }
 
-    protected NetworkConnectionDto(String id, String name, Boolean accessPort, NetworkDeviceDto device,
+    private NetworkConnectionDto(String id, String name, Boolean accessPort, NetworkDeviceDto device,
             IpConfigDto ipConfig, String vlanTag) {
         this.id = id;
         this.name = name;
@@ -65,5 +65,29 @@ public class NetworkConnectionDto {
         this.device = device;
         this.ipConfig = ipConfig;
         this.vlanTag = vlanTag;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Boolean getAccessPort() {
+        return accessPort;
+    }
+
+    public NetworkDeviceDto getDevice() {
+        return device;
+    }
+
+    public IpConfigDto getIpConfig() {
+        return ipConfig;
+    }
+
+    public String getVlanTag() {
+        return vlanTag;
     }
 }

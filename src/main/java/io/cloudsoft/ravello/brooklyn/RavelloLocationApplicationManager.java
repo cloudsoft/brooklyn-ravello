@@ -263,21 +263,14 @@ public class RavelloLocationApplicationManager {
                 "28017", "HTTP");
 
         Set<SuppliedServiceDto> services = Sets.newHashSet();
-//        for (Map.Entry<String, String> s : knownPortsAndProtocols.entrySet()) {
-//            services.add(SuppliedServiceDto.builder()
-//                .globalService(true)
-//                .protocol(s.getValue())
-//                .portRange(s.getKey())
-//                .name(s.getValue())
-//                .build());
-//        }
         for (Object portObject : inboundPorts) {
             String port = portObject.toString();
             String protocol = "TCP";
             if (!knownPortsAndProtocols.containsKey(port)) {
-                LOG.warn("Guessing {} protocol for port: {}", protocol, port);
+                if (LOG.isDebugEnabled()) LOG.debug("Guessing {} protocol for port: {}", protocol, port);
             } else {
                 protocol = knownPortsAndProtocols.get(port);
+                if (LOG.isTraceEnabled()) LOG.trace("Using {} protocol for port: {}", protocol, port);
             }
             services.add(SuppliedServiceDto.builder()
                     .portRange(port)

@@ -1,7 +1,10 @@
 package io.cloudsoft.ravello.dto;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.annotations.VisibleForTesting;
@@ -152,19 +155,22 @@ public class VmDto {
     protected VmDto(VmPropertiesDto properties, List<HardDriveDto> hardDrives, Set<SuppliedServiceDto> suppliedServices,
             List<NetworkConnectionDto> networkConnections) {
         this.vmProperties = properties;
-        this.hardDrives = hardDrives != null ? ImmutableList.copyOf(hardDrives) : null;
-        this.suppliedServices = suppliedServices != null ? ImmutableSet.copyOf(suppliedServices) : null;
-        this.networkConnections = networkConnections != null ? ImmutableList.copyOf(networkConnections) : null;
+        this.hardDrives = hardDrives != null ? ImmutableList.copyOf(hardDrives) : Collections.<HardDriveDto>emptyList();
+        this.suppliedServices = suppliedServices != null ? ImmutableSet.copyOf(suppliedServices) : Collections.<SuppliedServiceDto>emptySet();
+        this.networkConnections = networkConnections != null ? ImmutableList.copyOf(networkConnections) : Collections.<NetworkConnectionDto>emptyList();
     }
 
+    @Nonnull
     public List<HardDriveDto> getHardDrives() {
         return hardDrives;
     }
 
+    @Nonnull
     public Set<SuppliedServiceDto> getSuppliedServices() {
         return suppliedServices;
     }
 
+    @Nonnull
     public List<NetworkConnectionDto> getNetworkConnections() {
         return networkConnections;
     }
@@ -220,7 +226,7 @@ public class VmDto {
         return Objects.toStringHelper(this)
                 .add("properties", vmProperties)
                 .add("hardDrives", hardDrives)
-                .add("suppliedServices", suppliedServices)
+                .add("#suppliedServices", suppliedServices.size())
                 .add("networkConnections", networkConnections)
                 .omitNullValues()
                 .toString();
