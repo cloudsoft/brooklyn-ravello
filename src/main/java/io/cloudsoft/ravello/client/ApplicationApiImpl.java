@@ -52,11 +52,11 @@ public class ApplicationApiImpl implements ApplicationApi {
     @Override
     public void delete(String id) {
         checkNotNull(id, "id");
-        ravelloClient.delete(url + "/" + id);
+        ravelloClient.delete(url + "/" + id).consumeResponse();
     }
 
     @Override
-    public void publish(String id, String preferredCloud, String preferredRegion) {
+    public boolean publish(String id, String preferredCloud, String preferredRegion) {
         checkNotNull(id, "id");
         if (!Cloud.KNOWN_CLOUDS.contains(preferredCloud) ||
                 !Cloud.fromValue(preferredCloud).hasRegion(preferredRegion)) {
@@ -65,26 +65,30 @@ public class ApplicationApiImpl implements ApplicationApi {
         Map<String, String> body = ImmutableMap.of(
                 "preferredCloud", checkNotNull(preferredCloud),
                 "preferredRegion", checkNotNull(preferredRegion));
-        ravelloClient.post(url + "/" + id + "/publish", body);
+        return !ravelloClient.post(url + "/" + id + "/publish", body)
+                .consumeResponse()
+                .isErrorResponse();
     }
 
     @Override
-    public void startVMs(String applicationId) {
-        runActionOnApplication(applicationId, "start");
+    public boolean startVMs(String applicationId) {
+        return runActionOnApplication(applicationId, "start");
     }
 
     @Override
-    public void stopVMs(String applicationId) {
-        runActionOnApplication(applicationId, "stop");
+    public boolean stopVMs(String applicationId) {
+        return runActionOnApplication(applicationId, "stop");
     }
 
     @Override
-    public void publishUpdates(String applicationId) {
-        runActionOnApplication(applicationId, "publishUpdates");
+    public boolean publishUpdates(String applicationId) {
+        return runActionOnApplication(applicationId, "publishUpdates");
     }
 
-    private void runActionOnApplication(String applicationId, String action) {
-        ravelloClient.post(url + "/" + applicationId + "/" + action);
+    private boolean runActionOnApplication(String applicationId, String action) {
+        return !ravelloClient.post(url + "/" + applicationId + "/" + action)
+                .consumeResponse()
+                .isErrorResponse();
     }
 
 }

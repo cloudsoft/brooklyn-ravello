@@ -93,23 +93,27 @@ public class RavelloApiLocalImpl implements RavelloApi {
         }
 
         @Override
-        public void publish(String id, String preferredCloud, String preferredRegion) {
+        public boolean publish(String id, String preferredCloud, String preferredRegion) {
             LOG.info("(published {} to {}:{})", id, preferredCloud, preferredRegion);
+            return true;
         }
 
         @Override
-        public void startVMs(String applicationId) {
+        public boolean startVMs(String applicationId) {
             LOG.info("(started all VMs)");
+            return true;
         }
 
         @Override
-        public void stopVMs(String applicationId) {
+        public boolean stopVMs(String applicationId) {
             LOG.info("(stopped all VMs)");
+            return true;
         }
 
         @Override
-        public void publishUpdates(String applicationId) {
+        public boolean publishUpdates(String applicationId) {
             LOG.info("(published updates)");
+            return true;
         }
     }
 }

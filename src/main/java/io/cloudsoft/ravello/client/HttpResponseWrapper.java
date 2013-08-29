@@ -37,24 +37,25 @@ public class HttpResponseWrapper {
         return statusCode < 200 || statusCode >= 400;
     }
 
-    public void consume() {
+    public HttpResponseWrapper consumeResponse() {
         try {
             EntityUtils.consume(response.getEntity());
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
+        return this;
     }
 
     public <T> T get(Class<T> type) {
         T object = unmarshalResponseEntity(mapper.constructType(type));
-        consume();
+        consumeResponse();
         return object;
     }
 
     public <T> List<T> getList(Class<T> listType) {
         JavaType collectionType = mapper.getTypeFactory().constructCollectionType(List.class, listType);
         List<T> object = unmarshalResponseEntity(mapper.constructType(collectionType));
-        consume();
+        consumeResponse();
         return object;
     }
 

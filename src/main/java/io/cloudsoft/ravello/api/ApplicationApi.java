@@ -16,9 +16,9 @@ public interface ApplicationApi {
     public ApplicationDto update(String id, ApplicationDto application);
     public void delete(String id);
 
-    public void publish(String id, String preferredCloud, String preferredRegion);
-    public void startVMs(String applicationId);
-    public void stopVMs(String applicationId);
-    public void publishUpdates(String applicationId);
+    public boolean publish(String id, String preferredCloud, String preferredRegion);
+    public boolean startVMs(String applicationId);
+    public boolean stopVMs(String applicationId);
+    public boolean publishUpdates(String applicationId);
 
 }
