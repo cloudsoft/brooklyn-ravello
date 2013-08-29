@@ -28,27 +28,25 @@ public class ApplicationApiImpl implements ApplicationApi {
 
     @Override
     public List<ApplicationPropertiesDto> get() {
-        return ravelloClient.getList(url, ApplicationPropertiesDto.class);
+        return ravelloClient.get(url).getList(ApplicationPropertiesDto.class);
     }
 
     @Override
     public ApplicationDto get(String id) {
         checkNotNull(id, "id");
-        return ravelloClient.get(url + "/" + id, ApplicationDto.class);
+        return ravelloClient.get(url + "/" + id).get(ApplicationDto.class);
     }
 
     @Override
     public ApplicationDto create(ApplicationDto application) {
         checkNotNull(application, "application");
-        return ravelloClient.post(url, application, ApplicationDto.class);
+        return ravelloClient.post(url, application).get(ApplicationDto.class);
     }
 
     @Override
     public ApplicationDto update(String id, ApplicationDto application) {
-        return ravelloClient.put(
-                url + "/" + checkNotNull(id, "id"),
-                checkNotNull(application, "application"),
-                ApplicationDto.class);
+        return ravelloClient.put(url + "/" + checkNotNull(id, "id"), checkNotNull(application, "application"))
+                .get(ApplicationDto.class);
     }
 
     @Override

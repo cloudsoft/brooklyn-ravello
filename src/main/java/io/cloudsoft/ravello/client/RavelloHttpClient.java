@@ -44,12 +44,11 @@ import com.google.common.io.Closeables;
 public class RavelloHttpClient {
 
     private static final Logger LOG = LoggerFactory.getLogger(RavelloHttpClient.class);
+    private static final ObjectMapper MAPPER = RavelloObjectMapper.newObjectMapper();
 
     /**
      * TODO: exception handling.
      */
-
-    private static final ObjectMapper MAPPER = RavelloObjectMapper.newObjectMapper();
 
     private final URI endpoint;
     private final DefaultHttpClient httpClient = new DefaultHttpClient(new PoolingClientConnectionManager());
@@ -60,88 +59,52 @@ public class RavelloHttpClient {
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Couldn't turn endpoint into URI", e);
         }
-        setCredentials(username, password);
-    }
-
-    private void setCredentials(String username, String password) {
+        // Set username and password on httpClient
         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
         credentialsProvider.setCredentials(
-                new AuthScope(endpoint.getHost(), AuthScope.ANY_PORT),
+                new AuthScope(this.endpoint.getHost(), AuthScope.ANY_PORT),
                 new UsernamePasswordCredentials(username, password));
         httpClient.setCredentialsProvider(credentialsProvider);
     }
 
-    public void get(String uri) {
-        doRequest(new HttpGet(endpoint + uri));
+    public HttpResponseWrapper get(String uri) {
+        return doRequest(new HttpGet(endpoint + uri));
     }
 
-    public <T> T get(String uri, Class<T> unmarshalAs) {
-        return doRequest(new HttpGet(endpoint + uri), unmarshalAs);
+    public HttpResponseWrapper post(String uri) {
+        return doRequest(new HttpPost(endpoint + uri));
     }
 
-    public <T> List<T> getList(String uri, Class<T> unmarshalAs) {
-        JavaType collectionType = MAPPER.getTypeFactory().constructCollectionType(List.class, unmarshalAs);
-        return doRequest(new HttpGet(endpoint + uri), Optional.of(collectionType));
-    }
-
-    public void post(String uri) {
-        doRequest(new HttpPost(endpoint + uri));
-    }
-
-    public void post(String uri, Object body) {
+    public HttpResponseWrapper post(String uri, Object body) {
         HttpPost request = new HttpPost(endpoint+uri);
         attachEntityToRequest(request, checkNotNull(body, "body"));
-        doRequest(request, Optional.<JavaType>absent());
+        return doRequest(request);
     }
 
-    public <T> T post(String uri, Object body, Class<T> unmarshalAs) {
-        HttpPost request = new HttpPost(endpoint+uri);
-        attachEntityToRequest(request, checkNotNull(body, "body"));
-        return doRequest(request, unmarshalAs);
-    }
-
-    public <T> T put(String uri, Object body, Class<T> unmarshalAs) {
+    public HttpResponseWrapper put(String uri, Object body) {
         HttpPut request = new HttpPut(endpoint+checkNotNull(uri, "uri"));
         attachEntityToRequest(request, checkNotNull(body, "body"));
-        return doRequest(request, unmarshalAs);
+        return doRequest(request);
     }
 
-    public void put(String uri, Object body) {
-        HttpPut request = new HttpPut(endpoint+checkNotNull(uri, "uri"));
-        attachEntityToRequest(request, checkNotNull(body, "body"));
-        doRequest(request);
+    public HttpResponseWrapper delete(String uri) {
+        return doRequest(new HttpDelete(endpoint+uri));
     }
 
-    public void delete(String uri) {
-        doRequest(new HttpDelete(endpoint+uri));
-    }
-
-    private void doRequest(HttpRequestBase request) {
-        doRequest(request, Optional.<JavaType>absent());
-    }
-
-    private <T> T doRequest(HttpRequestBase request, Class<T> unmarshalAs) {
-        return doRequest(request, Optional.of(MAPPER.constructType(unmarshalAs)));
-    }
-
-    private <T> T doRequest(HttpRequestBase request, Optional<JavaType> unmarshalAs) {
+    private HttpResponseWrapper doRequest(HttpRequestBase request) {
         request.addHeader(HttpHeaders.ACCEPT, ContentType.APPLICATION_JSON.getMimeType());
         LOG.debug("Requesting: " + request);
         try {
             HttpResponse response = httpClient.execute(request);
-            T responseEntity = null;
-            if (isErrorResponse(response)) {
+            HttpResponseWrapper w = new HttpResponseWrapper(response, MAPPER);
+            if (w.isErrorResponse()) {
                 LOG.warn("Request errored: " + response.toString());
-                String out = getResponseContentAsString(response);
+                String out = w.getResponseContentAsString();
                 LOG.warn(out.equals("") ? "(No response body)" : out);
             } else {
                 LOG.debug(response.toString());
-                if (unmarshalAs.isPresent()) {
-                    responseEntity = unmarshalResponseEntity(response, unmarshalAs.get());
-                }
-                EntityUtils.consume(response.getEntity());
             }
-            return responseEntity;
+            return new HttpResponseWrapper(response, MAPPER);
         } catch (IOException e) {
             throw Throwables.propagate(e);
         }
@@ -160,43 +123,4 @@ public class RavelloHttpClient {
         request.setEntity(httpEntity);
     }
 
-    private String getResponseContentAsString(HttpResponse response) {
-        InputStream in = null;
-        try {
-            in = response.getEntity().getContent();
-            return CharStreams.toString(new InputStreamReader(in, "UTF-8"));
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        } finally {
-            if (in != null) {
-                Closeables.closeQuietly(in);
-            }
-        }
-    }
-
-    private <T> T unmarshalResponseEntity(HttpResponse response, JavaType type) {
-        if (isErrorResponse(response)) {
-            LOG.debug("Request errored[{}], not unmarshalling to {}",
-                    response.getStatusLine().getStatusCode(), type.getGenericSignature());
-            return null;
-        }
-
-        String responseContent = getResponseContentAsString(response);
-        if (LOG.isTraceEnabled()) {
-            LOG.trace(responseContent);
-        }
-        try {
-            T unmarshalled = MAPPER.readValue(responseContent, type);
-            if (LOG.isTraceEnabled()) LOG.trace("Unmarshalled: " + unmarshalled.toString());
-            return unmarshalled;
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
-    }
-
-    /** @return true if response status code is not between 200 and 399. */
-    private boolean isErrorResponse(HttpResponse response) {
-        int statusCode = response.getStatusLine().getStatusCode();
-        return statusCode < 200 || statusCode >= 400;
-    }
 }
