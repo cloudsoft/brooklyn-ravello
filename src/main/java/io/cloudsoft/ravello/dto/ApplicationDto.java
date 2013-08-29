@@ -36,7 +36,6 @@ public class ApplicationDto {
         private String id;
         private String name;
         private String description;
-        private Integer version;
         private Boolean published;
         private NetworkDto network;
 
@@ -108,21 +107,13 @@ public class ApplicationDto {
             network(this.network.toBuilder().subnets(revisedSubnets).build());
         }
 
-        public Builder version(Integer version) {
-            this.version = version;
-            return this;
-        }
-        public Builder incrementVersion() {
-            this.version += 1;
-            return this;
-        }
         public Builder network(NetworkDto network) {
             this.network = network;
             return this;
         }
 
         public ApplicationDto build() {
-            return new ApplicationDto(id, name, description, published, version, vms, network);
+            return new ApplicationDto(id, name, description, published, vms, network);
         }
 
         public Builder fromApplicationDto(ApplicationDto in) {
@@ -131,7 +122,6 @@ public class ApplicationDto {
                 .description(in.getDescription())
                 .network(in.getNetwork())
                 .published(in.isPublished())
-                .version(in.getVersion())
                 .vms(in.getVMs());
         }
 
@@ -146,18 +136,14 @@ public class ApplicationDto {
     @JsonProperty
     private NetworkDto network;
 
-    /** Defaults to zero */
-    @JsonProperty private int version;
-
     private ApplicationDto() {
         // For Jackson
     }
 
-    protected ApplicationDto(String id, String name, String description, Boolean published, Integer version,
+    protected ApplicationDto(String id, String name, String description, Boolean published,
             List<VmDto> vms, NetworkDto network) {
         this.properties = new ApplicationPropertiesDto(id, name, description, published);
         this.virtualMachines = vms == null ? Collections.<VmDto>emptyList() : ImmutableList.copyOf(vms);
-        this.version = version == null ? 0 : version;
         this.network = network;
     }
 
@@ -182,10 +168,6 @@ public class ApplicationDto {
         return properties != null ? properties.getId() : null;
     }
 
-    public int getVersion() {
-        return this.version;
-    }
-
     @Nonnull
     public Boolean isPublished() {
         return properties != null && properties.isPublished();
@@ -201,7 +183,6 @@ public class ApplicationDto {
                 .add("id", getId())
                 .add("name", getName())
                 .add("published", isPublished())
-                .add("version", version)
                 .add("#vms", virtualMachines.size())
                 .add("network", network)
                 .omitNullValues()

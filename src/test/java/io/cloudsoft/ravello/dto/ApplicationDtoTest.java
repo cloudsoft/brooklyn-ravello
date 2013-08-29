@@ -41,7 +41,6 @@ public class ApplicationDtoTest extends MarshallingTest {
         assertNull(app.getDescription());
         assertNull(app.getId());
         assertEquals(app.getVMs(), Collections.emptyList());
-        assertEquals(app.getVersion(), 0);
     }
 
     @Test

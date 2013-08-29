@@ -204,7 +204,6 @@ public class RavelloLocationApplicationManager {
         LOG.info("Creating empty application for " + this);
         ApplicationDto toCreate = ApplicationDto.builder()
             .name(nameFor("app"))
-            .version(0)
             .description("Brooklyn application")
             .build();
         ApplicationDto created = ravello.getApplicationApi().create(toCreate);

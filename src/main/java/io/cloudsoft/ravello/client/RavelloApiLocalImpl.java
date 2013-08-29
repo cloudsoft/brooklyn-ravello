@@ -71,9 +71,7 @@ public class RavelloApiLocalImpl implements RavelloApi {
             checkArgument(applications.containsKey(id));
 
             // Modify all VMs in application to point at localhost
-            ApplicationDto.Builder modifiedApp = application.toBuilder()
-                    .incrementVersion()
-                    .vms();
+            ApplicationDto.Builder modifiedApp = application.toBuilder().vms();
             for (VmDto vm : application.getVMs()) {
                 VmDto localhostVM = vm.toBuilder()
                         .id(vm.getId() == null ? Identifiers.makeRandomId(8) : vm.getId())
