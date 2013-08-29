@@ -4,8 +4,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
@@ -16,6 +21,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import brooklyn.util.text.Identifiers;
@@ -29,12 +35,24 @@ import io.cloudsoft.ravello.dto.SizeDto;
 import io.cloudsoft.ravello.dto.SuppliedServiceDto;
 import io.cloudsoft.ravello.dto.VmDto;
 
-public class RavelloLocationApplicationManager {
+/**
+ * Contains logic for delaying the publication of applications until a configurable time has
+ * passed since the last addition or removal of a VM. This proves useful if the Ravello API
+ * blocks existing VMs when adding new ones (for example if the network has to be reconfigured)
+ * but is a bit more complex than the basic {@link RavelloLocationApplicationManager}. Left in
+ * place but deprecated for the time being.
+ */
+@Deprecated
+public class RavelloLocationApplicationManagerWithDelayedPublish {
 
-    private static final Logger LOG = LoggerFactory.getLogger(RavelloLocationApplicationManager.class);
+    private static final Logger LOG = LoggerFactory.getLogger(RavelloLocationApplicationManagerWithDelayedPublish.class);
+
+    final ScheduledExecutorService updateManager = Executors.newScheduledThreadPool(4);
 
     private final RavelloApi ravello;
     private final String privateKeyId;
+    private final long publicationPause;
+    private final TimeUnit publicationPauseTimeUnit;
 
     // Accesses to these fields should be synchronised
     /**
@@ -42,18 +60,32 @@ public class RavelloLocationApplicationManager {
      * by a GET to /..ravello../applications/:id, but might NOT represent the true published application.
      */
     private ApplicationDto applicationModel;
+    private final List<CountDownLatch> latchesAwaitingAPublication = Lists.newLinkedList();
+    private int publishCount = 0;
 
     /** Creates an application manager that waits for twenty seconds before publishing updates */
-    RavelloLocationApplicationManager(RavelloApi ravelloApi, String privateKeyId) {
-        this.ravello = ravelloApi;
-        this.privateKeyId = privateKeyId;
+    RavelloLocationApplicationManagerWithDelayedPublish(RavelloApi ravelloApi, String privateKeyId) {
+        this(ravelloApi, privateKeyId, 20);
     }
 
-    public VmDto createNewPublishedVM(Collection<?> inboundPorts) {
+    /** Creates an application manager that waits publicationPause seconds before publishing updates */
+    RavelloLocationApplicationManagerWithDelayedPublish(RavelloApi ravelloApi, String privateKeyId, long publicationPause) {
+        this(ravelloApi, privateKeyId, publicationPause, TimeUnit.SECONDS);
+    }
+
+    RavelloLocationApplicationManagerWithDelayedPublish(RavelloApi ravelloApi, String privateKeyId, long publicationPause, TimeUnit timeUnit) {
+        this.ravello = ravelloApi;
+        this.privateKeyId = privateKeyId;
+        this.publicationPause = publicationPause;
+        this.publicationPauseTimeUnit = timeUnit;
+    }
+
+    public Optional<VmDto> createNewPublishedVM(Collection<?> inboundPorts) {
         checkNotNull(inboundPorts, "inboundPorts");
 
         final VmDto newMachine;
-        final ApplicationDto forUpdate, updated;
+        final ApplicationDto forUpdate;
+        CountDownLatch publishedLatch;
 
         synchronized (this) {
             if (applicationModel == null) {
@@ -68,11 +100,18 @@ public class RavelloLocationApplicationManager {
                     .build();
             applicationModel = ravello.getApplicationApi().update(applicationModel.getId(), forUpdate);
             LOG.trace("App {} after update: {}", applicationModel.getId(), applicationModel);
-            updated = publishApplication();
+            publishedLatch = submitPublishTask();
+        }
+
+        try {
+            publishedLatch.await();
+        } catch (InterruptedException e) {
+            LOG.warn("Wait for publishedLatch interrupted. Can't guarantee VM has started: " + newMachine, e);
         }
 
         // Fetch the latest model of the app and get the VM with name matching the one created
-        VmDto created = Iterables.find(updated.getVMs(), new Predicate<VmDto>() {
+        ApplicationDto localApplicationModel = ravello.getApplicationApi().get(forUpdate.getId());
+        Optional<VmDto> created = Iterables.tryFind(localApplicationModel.getVMs(), new Predicate<VmDto>() {
             @Override
             public boolean apply(VmDto input) {
                 return input.getName().equals(newMachine.getName());
@@ -82,27 +121,60 @@ public class RavelloLocationApplicationManager {
         return created;
     }
 
-    /** Sets and returns applicationDto to latest version from server */
-    private synchronized ApplicationDto publishApplication() {
-        String appId = applicationModel.getId();
+    private synchronized CountDownLatch submitPublishTask() {
+        final Integer countAtSubmit = ++publishCount;
+        CountDownLatch publishedLatch = new CountDownLatch(1);
+        latchesAwaitingAPublication.add(publishedLatch);
 
-        // If the app has not been published before, publish the app to chosen cloud.
-        // Otherwise, publish updates.
-        if (!applicationModel.isPublished()) {
-            LOG.info("Publishing app[{}]", appId);
-            ravello.getApplicationApi().publish(appId, "AMAZON", "Virginia");
-        } else {
-            LOG.info("Publishing updates for app[{}]", appId);
-            ravello.getApplicationApi().publishUpdates(appId);
-        }
+        Runnable publisher = new Runnable() {
+            @Override public void run() {
+                // Check for existence of other updates: taskCount == countAtSubmit
+                // if no more tasks submitted then try to publish, otherwise let a future version of
+                // this task publish.
+                // if publish fails then retry in thirty seconds - publish probably already running.
+                synchronized (RavelloLocationApplicationManagerWithDelayedPublish.this) {
+                    // Chance application was deleted before the task ran
+                    if (applicationModel == null) {
+                        LOG.info("Publish task running but applicationModel null. The application was probably deleted.");
+                        return;
+                    }
+                    String appId = applicationModel.getId();
 
-        // Update application model
-        applicationModel = ravello.getApplicationApi().get(appId);
-        return applicationModel;
+                    // If the app has not been published before, publish the app to chosen cloud.
+                    // Otherwise, publish updates.
+                    if (countAtSubmit == publishCount) {
+                        if (!applicationModel.isPublished()) {
+                            LOG.info("Publishing app[{}]", appId);
+                            ravello.getApplicationApi().publish(appId, "AMAZON", "Virginia");
+                        } else {
+                            LOG.info("Publishing updates for app[{}]", appId);
+                            ravello.getApplicationApi().publishUpdates(appId);
+                        }
+
+                        // TODO: Assuming success
+                        for (CountDownLatch latch : latchesAwaitingAPublication) {
+                            latch.countDown();
+                        }
+                        latchesAwaitingAPublication.clear();
+
+                        // Update application model
+                        applicationModel = ravello.getApplicationApi().get(appId);
+                    } else {
+                        LOG.debug("Postponing publication of app[{}]: count at submit was {}, count is now {}",
+                                appId, countAtSubmit, publishCount);
+                    }
+                }
+            }
+        };
+
+        LOG.info("Scheduling publication of app[{}] for {} {} time", applicationModel.getId(), publicationPause, publicationPauseTimeUnit.name().toLowerCase());
+        updateManager.schedule(publisher, publicationPause, publicationPauseTimeUnit);
+        return publishedLatch;
     }
 
     public void release(VmDto vm) {
         LOG.info("Removing VM: " + vm);
+        CountDownLatch publishedLatch;
         synchronized (this) {
             String appId = applicationModel.getId();
             ApplicationDto forUpdate = ApplicationDto.builder()
@@ -116,14 +188,21 @@ public class RavelloLocationApplicationManager {
                 return;
             } else {
                 ravello.getApplicationApi().update(appId, forUpdate);
-                publishApplication();
+                publishedLatch = submitPublishTask();
+                applicationModel = ravello.getApplicationApi().get(appId);
                 LOG.trace("Removed {} from app[{}]. New model: {}", vm, appId, applicationModel);
             }
+        }
+        try {
+            publishedLatch.await();
+        } catch (InterruptedException e) {
+            LOG.warn("Wait for publishedLatch interrupted. Can't guarantee VM has been released: "+vm, e);
         }
     }
 
     public synchronized void deleteApplicationModel() {
         if (applicationModel != null) {
+            // TODO: updateManager/latchesAwaitingAPublication?
             LOG.info("Deleting application model: " + applicationModel.getId());
             ravello.getApplicationApi().delete(applicationModel.getId());
             applicationModel = null;

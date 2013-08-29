@@ -48,7 +48,7 @@ public class RavelloLocationApplicationManagerTest {
     public void setupMocks() {
         ravelloApi = mock(RavelloApi.class);
         applicationApi = mock(ApplicationApi.class);
-        manager = new RavelloLocationApplicationManager(ravelloApi, "", 500, TimeUnit.MILLISECONDS);
+        manager = new RavelloLocationApplicationManager(ravelloApi, "");
 
         when(ravelloApi.getApplicationApi()).thenReturn(applicationApi);
         when(applicationApi.create(any(ApplicationDto.class))).thenReturn(createdApp);
@@ -78,13 +78,15 @@ public class RavelloLocationApplicationManagerTest {
             }
         });
         // Alter updated DTO to have published true.
-        doAnswer(new Answer<Void>() {
+        Answer<Void> answerSettingLastUpdatedAppToPublished = new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocation) throws Throwable {
                 lastUpdatedAppDto = lastUpdatedAppDto.toBuilder().published(true).build();
                 return null;
             }
-        }).when(applicationApi).publish(anyString(), anyString(), anyString());
+        };
+        doAnswer(answerSettingLastUpdatedAppToPublished)
+                .when(applicationApi).publish(anyString(), anyString(), anyString());
     }
 
     @Test
@@ -94,7 +96,8 @@ public class RavelloLocationApplicationManagerTest {
         verify(applicationApi).create(any(ApplicationDto.class));
         verify(applicationApi).update(eq(mockAppId), any(ApplicationDto.class));
         verify(applicationApi).publish(eq(mockAppId), anyString(), anyString());
-        verify(applicationApi, times(2)).get(anyString());
+        verify(applicationApi).get(eq(mockAppId));
+
         verifyNoMoreInteractions(applicationApi);
     }
 
@@ -125,19 +128,22 @@ public class RavelloLocationApplicationManagerTest {
     }
 
     @Test
-    public void testOnePublishForSeveralNewVMs() {
+    public void testNPublishesForNNewVMs() {
         // Initialise one VM
         manager.createNewPublishedVM(Collections.emptyList());
 
         // Create several VMs at once
-        List<Thread> threads = ImmutableList.of(newThreadCreatingPublishedVM(), newThreadCreatingPublishedVM(), newThreadCreatingPublishedVM());
+        List<Thread> threads = ImmutableList.of(
+                newThreadCreatingPublishedVM(),
+                newThreadCreatingPublishedVM(),
+                newThreadCreatingPublishedVM());
         for (Thread t : threads) t.start();
         for (Thread t : threads) {
             try { t.join(); } catch (InterruptedException e) { }
         }
 
         verify(applicationApi).publish(eq(mockAppId), anyString(), anyString());
-        verify(applicationApi).publishUpdates(eq(mockAppId));
+        verify(applicationApi, times(threads.size())).publishUpdates(eq(mockAppId));
     }
 
     private Thread newThreadCreatingPublishedVM() {
