@@ -12,14 +12,14 @@ public class LiveTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(LiveTest.class);
 
+    protected final BrooklynProperties properties = BrooklynProperties.Factory.newDefault();
     protected final String endpoint = "https://cloud.ravellosystems.com/services";
     protected final RavelloApi ravello;
 
     /** Looks for Ravello credentials in brooklyn.properties, then in system properties. */
     public LiveTest() {
-        BrooklynProperties properties = BrooklynProperties.Factory.newDefault();
-        Optional<String> username = Optional.fromNullable(properties.getFirst("brooklyn.location.named.ravello.username"));
-        Optional<String> password = Optional.fromNullable(properties.getFirst("brooklyn.location.named.ravello.password"));
+        Optional<String> username = Optional.fromNullable(getUsername());
+        Optional<String> password = Optional.fromNullable(getPassword());
 
         if (!username.isPresent() || !password.isPresent()) {
             LOG.info("Didn't find Ravello credentials in brooklyn properties, looking in system properties instead.");
@@ -36,4 +36,11 @@ public class LiveTest {
         ravello = new RavelloApiImpl(endpoint, username.get(), password.get());
     }
 
+    protected String getUsername() {
+        return properties.getFirst("brooklyn.location.named.ravello.username");
+    }
+
+    protected String getPassword() {
+        return properties.getFirst("brooklyn.location.named.ravello.password");
+    }
 }

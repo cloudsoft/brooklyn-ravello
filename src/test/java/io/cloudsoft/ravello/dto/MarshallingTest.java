@@ -29,12 +29,4 @@ public abstract class MarshallingTest {
         }
     }
 
-    public <T> T unmarshal(String json, Class<T> as) {
-        try {
-            return mapper.readValue(new File("user.json"), as);
-        } catch (IOException e) {
-            throw new RuntimeException("Unmarshal to "+as+"failed", e);
-        }
-    }
-
 }

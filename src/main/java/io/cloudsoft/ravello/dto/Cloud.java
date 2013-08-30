@@ -14,7 +14,10 @@ public enum Cloud {
     UNRECOGNIZED;
 
     public static final Set<String> KNOWN_CLOUDS = ImmutableSet.of(
-            AMAZON.name(), HPCLOUD.name(), RACKSPACE_OS.name());
+            AMAZON.name(),
+            HPCLOUD.name(),
+            RACKSPACE_OS.name());
+
     private final Set<String> regions;
 
     Cloud(String... regions) {

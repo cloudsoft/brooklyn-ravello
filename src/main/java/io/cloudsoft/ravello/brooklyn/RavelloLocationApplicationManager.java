@@ -113,7 +113,6 @@ public class RavelloLocationApplicationManager {
             if (forUpdate.getVMs().isEmpty()) {
                 LOG.info("No VMs remaining in app[{}]. Going to delete.", appId);
                 deleteApplicationModel();
-                return;
             } else {
                 ravello.getApplicationApi().update(appId, forUpdate);
                 publishApplication();

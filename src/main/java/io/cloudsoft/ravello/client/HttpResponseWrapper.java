@@ -37,6 +37,18 @@ public class HttpResponseWrapper {
         return statusCode < 200 || statusCode >= 400;
     }
 
+    public String getErrorMessage() {
+        Header[] errorMessages = response.getHeaders("ERROR-MESSAGE");
+        if (!isErrorResponse() || errorMessages.length == 0) {
+            return "";
+        } else {
+            return errorMessages[0].getValue();
+        }
+    }
+
+    /**
+     * @see EntityUtils#consume(org.apache.http.HttpEntity)
+     */
     public HttpResponseWrapper consumeResponse() {
         try {
             EntityUtils.consume(response.getEntity());
