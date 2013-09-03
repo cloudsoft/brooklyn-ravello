@@ -216,7 +216,7 @@ public class RavelloLocationApplicationManager {
     }
 
     private String nameFor(String type) {
-        return type + "-" + Identifiers.makeRandomId(8);
+        return type + Identifiers.makeRandomId(8);
     }
 
 }
