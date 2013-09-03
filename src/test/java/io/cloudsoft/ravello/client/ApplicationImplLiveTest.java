@@ -76,27 +76,6 @@ public class ApplicationImplLiveTest extends LiveTest {
     }
 
     @Test(groups = "live")
-    public void testCreateAndDeleteApplication() {
-        ApplicationDto created = null;
-        try {
-            ApplicationDto toCreate = makeTestApplication();
-            created = appApi.create(toCreate);
-
-            assertNotNull(created, "Created application should not be null");
-            assertNotNull(created.getId());
-            assertNotNull(created.getVMs());
-            assertEquals(1, created.getVMs().size());
-            assertEquals(toCreate.getVMs().get(0).getName(),
-                    created.getVMs().get(0).getName());
-        } finally {
-            if (created != null) {
-                appApi.delete(created.getId());
-                assertNull(appApi.get(created.getId()));
-            }
-        }
-    }
-
-    @Test(groups = "live")
     public void testPublishingApplication() {
         ApplicationDto created = null;
         try {
@@ -104,6 +83,11 @@ public class ApplicationImplLiveTest extends LiveTest {
             created = appApi.create(toCreate);
 
             assertNotNull(created, "Created application should not be null");
+            assertNotNull(created.getId(), "Created application should have an ID set");
+            assertNotNull(created.getVMs());
+            assertEquals(1, created.getVMs().size());
+            assertEquals(toCreate.getVMs().get(0).getName(),
+                    created.getVMs().get(0).getName());
             assertFalse(created.isPublished(), "Newly created application should not be published");
 
             String id = created.getId();
@@ -113,6 +97,7 @@ public class ApplicationImplLiveTest extends LiveTest {
         } finally {
             if (created != null) {
                 appApi.delete(created.getId());
+                assertNull(appApi.get(created.getId()));
             }
         }
     }
