@@ -1,7 +1,5 @@
 package io.cloudsoft.ravello.dto;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
@@ -10,13 +8,11 @@ public enum Cloud {
 
     AMAZON("Virginia", "Oregon"),
     HPCLOUD("US West AZ 1", "US West AZ 2", "US West AZ 3"),
-    RACKSPACE_OS("Dallas", "Chicago"),
     UNRECOGNIZED;
 
-    public static final Set<String> KNOWN_CLOUDS = ImmutableSet.of(
+    private static final Set<String> KNOWN_CLOUDS = ImmutableSet.of(
             AMAZON.name(),
-            HPCLOUD.name(),
-            RACKSPACE_OS.name());
+            HPCLOUD.name());
 
     private final Set<String> regions;
 
@@ -28,12 +24,16 @@ public enum Cloud {
         return this.regions.contains(name);
     }
 
-    public static Cloud fromValue(String cloud) {
+    public static Cloud fromString(String cloud) {
         try {
-            return valueOf(checkNotNull(cloud, "cloud"));
+            return cloud != null ? valueOf(cloud.toUpperCase()) : UNRECOGNIZED;
         } catch (IllegalArgumentException e) {
             return UNRECOGNIZED;
         }
+    }
+
+    public static boolean isKnownCloud(String cloud) {
+        return KNOWN_CLOUDS.contains(cloud);
     }
 
 }
