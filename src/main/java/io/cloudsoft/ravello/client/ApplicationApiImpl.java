@@ -64,7 +64,7 @@ public class ApplicationApiImpl implements ApplicationApi {
             LOG.warn("Publishing app {} to unknown region in {}: {}", id, preferredCloud, preferredRegion);
         }
         Map<String, String> body = ImmutableMap.of(
-                "preferredCloud", preferredCloud,
+                "preferredCloud", preferredCloud.toUpperCase(),
                 "preferredRegion", preferredRegion);
         return !ravelloClient.post(url + "/" + id + "/publish", body)
                 .consumeResponse()

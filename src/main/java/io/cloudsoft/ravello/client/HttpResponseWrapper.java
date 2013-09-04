@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
@@ -22,7 +23,7 @@ public class HttpResponseWrapper {
 
     private final HttpResponse response;
     private final ObjectMapper mapper;
-    
+
     HttpResponseWrapper(HttpResponse response, ObjectMapper mapper) {
         this.response = response;
         this.mapper = mapper;
