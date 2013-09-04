@@ -84,17 +84,13 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
 
         // Add a new VM with an SSH service
         VmDto created = applicationManager.createNewPublishedVM(inboundPorts);
+        if (created.getRuntimeInformation() == null || created.getRuntimeInformation().getExternalFullyQualifiedDomainName() == null) {
+            throw new NoMachinesAvailableException("A VM was created but it does not appear to have been published. " +
+                    "It has no external fully qualified domain name: " + created);
+        }
+
         LOG.info("Created new VM: " + created);
         waitForReachable(created);
-
-//        if (!created.isPresent()) {
-//            throw new NoMachinesAvailableException("No VM returned by applicationManager. " +
-//                    "Check logs for previous warnings and unexpected response content from API requests.");
-//        }
-//        LOG.info("Created new VM: " + created.get());
-//        waitForReachable(created.get());
-//
-//        String hostname = created.get().getRuntimeInformation().getExternalFullyQualifiedDomainName();
 
         String hostname = created.getRuntimeInformation().getExternalFullyQualifiedDomainName();
         return getManagementContext().getLocationManager().createLocation(LocationSpec.create(RavelloSshLocation.class)
