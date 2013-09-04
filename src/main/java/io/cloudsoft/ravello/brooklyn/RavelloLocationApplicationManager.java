@@ -21,6 +21,7 @@ import com.google.common.collect.Sets;
 import brooklyn.util.text.Identifiers;
 import io.cloudsoft.ravello.api.RavelloApi;
 import io.cloudsoft.ravello.dto.ApplicationDto;
+import io.cloudsoft.ravello.dto.Cloud;
 import io.cloudsoft.ravello.dto.HardDriveDto;
 import io.cloudsoft.ravello.dto.IpConfigDto;
 import io.cloudsoft.ravello.dto.NetworkConnectionDto;
@@ -35,6 +36,8 @@ public class RavelloLocationApplicationManager {
 
     private final RavelloApi ravello;
     private final String privateKeyId;
+    private final String targetCloud;
+    private final String targetRegion;
 
     // Accesses to these fields should be synchronised
     /**
@@ -44,9 +47,11 @@ public class RavelloLocationApplicationManager {
     private ApplicationDto applicationModel;
 
     /** Creates an application manager that waits for twenty seconds before publishing updates */
-    RavelloLocationApplicationManager(RavelloApi ravelloApi, String privateKeyId) {
+    RavelloLocationApplicationManager(RavelloApi ravelloApi, String privateKeyId, String targetCloud, String targetRegion) {
         this.ravello = ravelloApi;
         this.privateKeyId = privateKeyId;
+        this.targetCloud = targetCloud;
+        this.targetRegion = targetRegion;
     }
 
     public VmDto createNewPublishedVM(Collection<?> inboundPorts) {
@@ -89,8 +94,8 @@ public class RavelloLocationApplicationManager {
         // If the app has not been published before, publish the app to chosen cloud.
         // Otherwise, publish updates.
         if (!applicationModel.isPublished()) {
-            LOG.info("Publishing app[{}]", appId);
-            ravello.getApplicationApi().publish(appId, "AMAZON", "Virginia");
+            LOG.info("Publishing app[{}] to {}:{}", appId, targetCloud, targetRegion);
+            ravello.getApplicationApi().publish(appId, targetCloud, targetRegion);
         } else {
             LOG.info("Publishing updates for app[{}]", appId);
             ravello.getApplicationApi().publishUpdates(appId);

@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
 import brooklyn.location.Location;
@@ -29,7 +30,7 @@ public class RavelloLocationResolver implements LocationResolver {
 
     @Override
     public String getPrefix() {
-        return "ravello";
+        return "rr";
     }
 
     @Override
@@ -53,7 +54,6 @@ public class RavelloLocationResolver implements LocationResolver {
         Map allProperties = getAllProperties(registry, properties);
         Map ravelloProperties = RavelloPropertiesFromBrooklynProperties.getRavelloProperties(allProperties);
         ravelloProperties.putAll(locationFlags);
-        LOG.info("Making RavelloLocation for: " + ravelloProperties);
 
         LocationSpec<RavelloLocation> locSpec = LocationSpec.create(RavelloLocation.class).configure(ravelloProperties);
         return managementContext.getLocationManager().createLocation(locSpec);

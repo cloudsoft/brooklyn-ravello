@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closeables;
 
@@ -25,6 +26,7 @@ import brooklyn.util.internal.Repeater;
 import brooklyn.util.time.Time;
 import io.cloudsoft.ravello.api.RavelloApi;
 import io.cloudsoft.ravello.client.RavelloApiImpl;
+import io.cloudsoft.ravello.dto.Cloud;
 import io.cloudsoft.ravello.dto.VmDto;
 
 public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
@@ -52,7 +54,19 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         String privateKeyId = (String) checkNotNull(properties.get("privateKeyId"), "privateKeyId");
 
         RavelloApi ravello = new RavelloApiImpl(apiEndpoint, username, password);
-        applicationManager = new RavelloLocationApplicationManager(ravello, privateKeyId);
+
+        String preferredCloud = (String) properties.get("preferredCloud");
+        String preferredRegion = (String) properties.get("preferredRegion");
+
+        if (preferredCloud == null || preferredRegion == null) {
+            LOG.info("Preferred cloud/region not both specified. Defaulting to {}:{}", Cloud.AMAZON.name(), "Virginia");
+            preferredCloud = Cloud.AMAZON.name();
+            preferredRegion = "Virginia";
+        } else {
+            LOG.debug("Preferred cloud/region: {}:{}", preferredCloud, preferredRegion);
+        }
+
+        applicationManager = new RavelloLocationApplicationManager(ravello, privateKeyId, preferredCloud, preferredRegion);
     }
 
     public RavelloSshLocation obtain() throws NoMachinesAvailableException {
@@ -71,8 +85,16 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         // Add a new VM with an SSH service
         VmDto created = applicationManager.createNewPublishedVM(inboundPorts);
         LOG.info("Created new VM: " + created);
-
         waitForReachable(created);
+
+//        if (!created.isPresent()) {
+//            throw new NoMachinesAvailableException("No VM returned by applicationManager. " +
+//                    "Check logs for previous warnings and unexpected response content from API requests.");
+//        }
+//        LOG.info("Created new VM: " + created.get());
+//        waitForReachable(created.get());
+//
+//        String hostname = created.get().getRuntimeInformation().getExternalFullyQualifiedDomainName();
 
         String hostname = created.getRuntimeInformation().getExternalFullyQualifiedDomainName();
         return getManagementContext().getLocationManager().createLocation(LocationSpec.create(RavelloSshLocation.class)
@@ -92,8 +114,8 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
 
         final String hostname = vm.getRuntimeInformation().getExternalFullyQualifiedDomainName();
         int sshTimeout = 20 * 60 * 1000;
-        LOG.info("Started VM. Waiting up to {} for it to be sshable on {}@{}",
-                        Time.makeTimeStringRounded(sshTimeout), sshUsername, hostname);
+        LOG.info("Started vm[{}]. Waiting up to {} for it to be sshable on {}@{}",
+                        vm.getId(), Time.makeTimeStringRounded(sshTimeout), sshUsername, hostname);
 
         boolean reachable = new Repeater()
                 .repeat()

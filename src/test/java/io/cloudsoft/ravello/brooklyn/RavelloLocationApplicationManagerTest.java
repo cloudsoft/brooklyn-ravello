@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import io.cloudsoft.ravello.api.ApplicationApi;
 import io.cloudsoft.ravello.api.RavelloApi;
 import io.cloudsoft.ravello.dto.ApplicationDto;
+import io.cloudsoft.ravello.dto.Cloud;
 import io.cloudsoft.ravello.dto.VmDto;
 import joptsimple.internal.Strings;
 
@@ -44,11 +45,16 @@ public class RavelloLocationApplicationManagerTest {
             .build();
     ApplicationDto lastUpdatedAppDto = createdApp;
 
+    final Cloud targetCloud = Cloud.HPCLOUD;
+    final String targetRegion = "US West AZ 2";
+
     @BeforeMethod
     public void setupMocks() {
-        ravelloApi = mock(RavelloApi.class);
         applicationApi = mock(ApplicationApi.class);
-        manager = new RavelloLocationApplicationManager(ravelloApi, "");
+        ravelloApi = mock(RavelloApi.class);
+
+        /** object under test **/
+        manager = new RavelloLocationApplicationManager(ravelloApi, "", targetCloud.name(), targetRegion);
 
         when(ravelloApi.getApplicationApi()).thenReturn(applicationApi);
         when(applicationApi.create(any(ApplicationDto.class))).thenReturn(createdApp);
@@ -86,7 +92,7 @@ public class RavelloLocationApplicationManagerTest {
             }
         };
         doAnswer(answerSettingLastUpdatedAppToPublished)
-                .when(applicationApi).publish(anyString(), anyString(), anyString());
+                .when(applicationApi).publish(eq(mockAppId), eq(targetCloud.name()), eq(targetRegion));
     }
 
     @Test
@@ -95,7 +101,7 @@ public class RavelloLocationApplicationManagerTest {
 
         verify(applicationApi).create(any(ApplicationDto.class));
         verify(applicationApi).update(eq(mockAppId), any(ApplicationDto.class));
-        verify(applicationApi).publish(eq(mockAppId), anyString(), anyString());
+        verify(applicationApi).publish(eq(mockAppId), eq(targetCloud.name()), eq(targetRegion));
         verify(applicationApi).get(eq(mockAppId));
 
         verifyNoMoreInteractions(applicationApi);
@@ -108,7 +114,7 @@ public class RavelloLocationApplicationManagerTest {
         manager.release(created);
 
         // One publish for first vm, two publish updates for second vm and release.
-        verify(applicationApi).publish(eq(mockAppId), anyString(), anyString());
+        verify(applicationApi).publish(eq(mockAppId), eq(targetCloud.name()), eq(targetRegion));
         verify(applicationApi, times(2)).publishUpdates(mockAppId);
         verify(applicationApi, times(3)).update(eq(mockAppId), any(ApplicationDto.class));
     }
@@ -142,7 +148,7 @@ public class RavelloLocationApplicationManagerTest {
             try { t.join(); } catch (InterruptedException e) { }
         }
 
-        verify(applicationApi).publish(eq(mockAppId), anyString(), anyString());
+        verify(applicationApi).publish(eq(mockAppId), eq(targetCloud.name()), eq(targetRegion));
         verify(applicationApi, times(threads.size())).publishUpdates(eq(mockAppId));
     }
 

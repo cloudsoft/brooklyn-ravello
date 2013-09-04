@@ -14,6 +14,7 @@ import org.testng.annotations.Test;
 import io.cloudsoft.ravello.api.ApplicationApi;
 import io.cloudsoft.ravello.dto.ApplicationDto;
 import io.cloudsoft.ravello.dto.ApplicationDto.ApplicationPropertiesDto;
+import io.cloudsoft.ravello.dto.Cloud;
 import io.cloudsoft.ravello.dto.HardDriveDto;
 import io.cloudsoft.ravello.dto.IpConfigDto;
 import io.cloudsoft.ravello.dto.NetworkConnectionDto;
@@ -91,7 +92,7 @@ public class ApplicationImplLiveTest extends LiveTest {
             assertFalse(created.isPublished(), "Newly created application should not be published");
 
             String id = created.getId();
-            appApi.publish(id, "AMAZON", "Virginia");
+            appApi.publish(id, Cloud.AMAZON.name(), "Virginia");
             assertTrue(appApi.get(id).isPublished(), "Application should be published");
 
         } finally {

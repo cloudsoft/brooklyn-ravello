@@ -58,13 +58,14 @@ public class ApplicationApiImpl implements ApplicationApi {
     @Override
     public boolean publish(String id, String preferredCloud, String preferredRegion) {
         checkNotNull(id, "id");
-        if (!Cloud.KNOWN_CLOUDS.contains(preferredCloud) ||
-                !Cloud.fromValue(preferredCloud).hasRegion(preferredRegion)) {
-            LOG.warn("Publishing app {} to unknown cloud and region: {}/{}", id, preferredCloud, preferredRegion);
+        checkNotNull(preferredCloud, "preferredCloud");
+        checkNotNull(preferredRegion, "preferredRegion");
+        if (!Cloud.fromString(preferredCloud).hasRegion(preferredRegion)) {
+            LOG.warn("Publishing app {} to unknown region in {}: {}", id, preferredCloud, preferredRegion);
         }
         Map<String, String> body = ImmutableMap.of(
-                "preferredCloud", checkNotNull(preferredCloud),
-                "preferredRegion", checkNotNull(preferredRegion));
+                "preferredCloud", preferredCloud,
+                "preferredRegion", preferredRegion);
         return !ravelloClient.post(url + "/" + id + "/publish", body)
                 .consumeResponse()
                 .isErrorResponse();
