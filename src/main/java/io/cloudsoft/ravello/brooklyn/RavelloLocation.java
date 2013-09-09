@@ -2,7 +2,12 @@ package io.cloudsoft.ravello.brooklyn;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import io.cloudsoft.ravello.api.RavelloApi;
+import io.cloudsoft.ravello.client.RavelloApiImpl;
+import io.cloudsoft.ravello.dto.Cloud;
+import io.cloudsoft.ravello.dto.VmDto;
 
+import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -12,10 +17,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.io.Closeables;
-
 import brooklyn.location.LocationSpec;
 import brooklyn.location.NoMachinesAvailableException;
 import brooklyn.location.basic.SshMachineLocation;
@@ -24,10 +25,9 @@ import brooklyn.util.collections.MutableMap;
 import brooklyn.util.flags.SetFromFlag;
 import brooklyn.util.internal.Repeater;
 import brooklyn.util.time.Time;
-import io.cloudsoft.ravello.api.RavelloApi;
-import io.cloudsoft.ravello.client.RavelloApiImpl;
-import io.cloudsoft.ravello.dto.Cloud;
-import io.cloudsoft.ravello.dto.VmDto;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.io.Closeables;
 
 public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
 
@@ -120,11 +120,24 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
                     public Boolean call() {
                         SshMachineLocation sshLoc = null;
                         try {
-                            sshLoc = new SshMachineLocation(MutableMap.builder()
-                                    .put("address", hostname)
+                            InetAddress inet;
+                            try {
+                                inet = InetAddress.getByName(hostname);
+                            } catch (Exception e) {
+                                LOG.debug("Hostname "+hostname+" not ready yet; will keep trying ("+e+")");
+                                return false;
+                            }
+                            MutableMap<Object, Object> cfg = MutableMap.builder()
+                                    .put("address", inet)
                                     .put("user", sshUsername)
                                     .put("privateKeyFile", privateKeyFile)
-                                    .build());
+                                    .build();
+                            if (getManagementContext()!=null) {
+                                sshLoc = getManagementContext().getLocationManager().createLocation(cfg, SshMachineLocation.class);
+                            } else {
+                                // fall back to legacy way (will log warning)
+                                sshLoc = new SshMachineLocation(cfg);
+                            }
                             int exitStatus = sshLoc.run(MutableMap.of(), "true");
                             return exitStatus == 0;
                         } finally {
@@ -156,4 +169,10 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         applicationManager.deleteApplicationModel();
     }
 
+    public Map<String, Object> getProvisioningFlags(Collection<String> tags) {
+        // TODO if we need provisioning flags...
+        LOG.debug("Provisioning flags not supported for "+this+" ("+tags+")");
+        return MutableMap.<String, Object>of();
+    }
+    
 }
