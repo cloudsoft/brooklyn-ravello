@@ -3,3 +3,6 @@ target
 *.iml
 *.swp
 *.log
+.classpath
+.settings
+.project
