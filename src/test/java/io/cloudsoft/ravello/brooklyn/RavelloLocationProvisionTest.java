@@ -46,13 +46,13 @@ public class RavelloLocationProvisionTest {
     @Test(groups="live")
     public void testObtainRavelloLocation() throws Exception {
         assertNotNull(location);
-        RavelloSshLocation sshLocation = location.obtain();
+        RavelloSshMachineLocation sshLocation = location.obtain();
         assertNotNull(sshLocation);
     }
 
     @Test(groups="live")
     public void testObtainRavelloLocationAndRunSshCommand() throws Exception {
-        RavelloSshLocation sshLocation = location.obtain();
+        RavelloSshMachineLocation sshLocation = location.obtain();
         Map details = MutableMap.of(
                 "hostname", sshLocation.getAddress().getHostAddress(),
                 "user", sshLocation.getUser());

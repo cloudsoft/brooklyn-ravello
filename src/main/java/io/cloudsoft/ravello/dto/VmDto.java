@@ -7,11 +7,11 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 public class VmDto {
 
@@ -36,9 +36,9 @@ public class VmDto {
         private String keypairId;
         private VmRuntimeInformationDto runtimeInformation;
 
-        private List<HardDriveDto> hardDrives;
-        private Set<SuppliedServiceDto> suppliedServices;
-        private List<NetworkConnectionDto> networkConnections;
+        private List<HardDriveDto> hardDrives = Lists.newArrayList();
+        private Set<SuppliedServiceDto> suppliedServices = Sets.newHashSet();
+        private List<NetworkConnectionDto> networkConnections = Lists.newArrayList();
 
         public Builder id(String id) {
             this.id = id;
@@ -88,43 +88,40 @@ public class VmDto {
             this.keypairId = keypairId;
             return this;
         }
-
-        /** Only visible for {@link io.cloudsoft.ravello.client.RavelloApiLocalImpl} */
-        @VisibleForTesting
         public Builder runtimeInformation(VmRuntimeInformationDto runtimeInformation) {
             this.runtimeInformation = runtimeInformation;
             return this;
         }
-
         public Builder hardDrives(List<HardDriveDto> hardDrives) {
-            this.hardDrives = hardDrives;
+            this.hardDrives = Lists.newArrayList(hardDrives);
             return this;
         }
         public Builder hardDrives(HardDriveDto... hardDrives) {
-            this.hardDrives = ImmutableList.copyOf(hardDrives);
+            this.hardDrives = Lists.newArrayList(hardDrives);
             return this;
         }
         public Builder networkConnections(List<NetworkConnectionDto> networkConnections) {
-            this.networkConnections = networkConnections;
+            this.networkConnections = Lists.newArrayList(networkConnections);
             return this;
         }
         public Builder networkConnections(NetworkConnectionDto... networkConnections) {
-            this.networkConnections = ImmutableList.copyOf(networkConnections);
+            this.networkConnections = Lists.newArrayList(networkConnections);
             return this;
         }
         public Builder suppliedServices(Set<SuppliedServiceDto> suppliedServices) {
-            this.suppliedServices = suppliedServices;
+            this.suppliedServices = Sets.newHashSet(suppliedServices);
             return this;
         }
         public Builder suppliedServices(SuppliedServiceDto... suppliedServices) {
-            this.suppliedServices = ImmutableSet.copyOf(suppliedServices);
+            this.suppliedServices = Sets.newHashSet(suppliedServices);
             return this;
         }
 
         public VmDto build() {
             VmPropertiesDto properties = new VmPropertiesDto(id, baseVmId, name, description, numCpus, memorySize,
                     platform, hostnames, requiresKeypair, keypairId, runtimeInformation);
-            return new VmDto(properties, hardDrives, suppliedServices, networkConnections);
+            return new VmDto(properties, ImmutableList.copyOf(hardDrives), ImmutableSet.copyOf(suppliedServices),
+                    ImmutableList.copyOf(networkConnections));
         }
 
         public Builder fromVmDto(VmDto in) {

@@ -15,7 +15,7 @@ public class SubnetDtoTest {
                 .networkConnectionRefs(1L, 2L, 3L, 4L, 5L)
                 .build();
         assertTrue(subnet.getNetworkConnectionRefs().contains(4L));
-        subnet = subnet.toBuilder().removeNetworkConnectionRef(3L, 4L).build();
+        subnet = subnet.toBuilder().removeNetworkConnectionRefs(3L, 4L).build();
         assertEquals(subnet.getNetworkConnectionRefs(), ImmutableSet.of(1L, 2L, 5L));
     }
 

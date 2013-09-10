@@ -3,12 +3,9 @@ package io.cloudsoft.ravello.client;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.List;
 
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -29,16 +26,11 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
-import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
-import com.google.common.io.CharStreams;
-import com.google.common.io.Closeables;
 
 @ThreadSafe
 public class RavelloHttpClient {
@@ -98,7 +90,7 @@ public class RavelloHttpClient {
             HttpResponse response = httpClient.execute(request);
             HttpResponseWrapper w = new HttpResponseWrapper(response, MAPPER);
             if (w.isErrorResponse()) {
-                LOG.warn("Request errored: " + response.toString());
+                LOG.warn("Request {} errored: {}", request, response.toString());
                 String out = w.getResponseContentAsString();
                 LOG.warn(out.equals("") ? "(No response body)" : out);
             } else {

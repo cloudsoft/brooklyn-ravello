@@ -12,7 +12,6 @@ import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
@@ -21,7 +20,6 @@ import com.google.common.collect.Sets;
 import brooklyn.util.text.Identifiers;
 import io.cloudsoft.ravello.api.RavelloApi;
 import io.cloudsoft.ravello.dto.ApplicationDto;
-import io.cloudsoft.ravello.dto.Cloud;
 import io.cloudsoft.ravello.dto.HardDriveDto;
 import io.cloudsoft.ravello.dto.IpConfigDto;
 import io.cloudsoft.ravello.dto.NetworkConnectionDto;
@@ -39,14 +37,14 @@ public class RavelloLocationApplicationManager {
     private final String targetCloud;
     private final String targetRegion;
 
-    // Accesses to these fields should be synchronised
+    // Accesses to applicationModel should be synchronised
     /**
      * Holds the current representation of the application. This should mirror the object returned
      * by a GET to /..ravello../applications/:id, but might NOT represent the true published application.
      */
     private ApplicationDto applicationModel;
 
-    /** Creates an application manager that waits for twenty seconds before publishing updates */
+    /** Creates an application manager that publishes applications to the given cloud and region. */
     RavelloLocationApplicationManager(RavelloApi ravelloApi, String privateKeyId, String targetCloud, String targetRegion) {
         this.ravello = ravelloApi;
         this.privateKeyId = privateKeyId;
@@ -107,9 +105,9 @@ public class RavelloLocationApplicationManager {
     }
 
     public void release(VmDto vm) {
-        LOG.info("Removing VM: " + vm);
         synchronized (this) {
             String appId = applicationModel.getId();
+            LOG.info("Removing VM from {}: {}", appId, vm);
             ApplicationDto forUpdate = ApplicationDto.builder()
                     .fromApplicationDto(applicationModel)
                     .removeVm(vm.getId())
@@ -146,6 +144,7 @@ public class RavelloLocationApplicationManager {
     }
 
     private VmDto makeVmDto(Collection<?> inboundPorts) {
+        // TODO: Could use Brooklyn's CloudMachineNamer
         String vmNameAndHostname = nameFor("vm");
         return VmDto.builder()
                 .baseVmId("1671271")
@@ -192,6 +191,7 @@ public class RavelloLocationApplicationManager {
         Map<String, String> knownPortsAndProtocols = ImmutableMap.of(
                 "22", "SSH",
                 "80", "HTTP",
+                "443", "HTTPS",
                 "27017", "TCP",
                 "28017", "HTTP");
 

@@ -4,21 +4,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 public class ApplicationDto {
@@ -32,7 +28,7 @@ public class ApplicationDto {
     }
 
     public static class Builder {
-        private List<VmDto> vms;
+        private List<VmDto> vms = Lists.newArrayList();
         private String id;
         private String name;
         private String description;
@@ -56,32 +52,26 @@ public class ApplicationDto {
             return this;
         }
         public Builder vms(List<VmDto> vms) {
-            this.vms = vms;
+            this.vms = Lists.newArrayList(vms);
             return this;
         }
         public Builder vms(VmDto... vms) {
-            this.vms = ImmutableList.copyOf(vms);
+            this.vms = Lists.newArrayList(vms);
             return this;
         }
         public Builder addVm(VmDto vm) {
-            this.vms = this.vms == null
-                ? ImmutableList.of(vm)
-                : ImmutableList.<VmDto>builder().add(checkNotNull(vm, "vm")).addAll(vms).build();
+            this.vms.add(vm);
             return this;
         }
         public Builder removeVm(final String id) {
             checkNotNull(id, "id");
-            if (this.vms == null) return this;
-
-            ImmutableList.Builder<VmDto> vms = ImmutableList.builder();
-            for (VmDto vm : this.vms) {
-                if (!vm.getId().equals(id)) {
-                    vms.add(vm);
-                } else {
+            for (Iterator<VmDto> it = vms.iterator(); it.hasNext(); ) {
+                VmDto vm = it.next();
+                if (id.equals(vm.getId())) {
+                    it.remove();
                     removeVmFromNetworkSubnetRefs(vm);
                 }
             }
-            this.vms = vms.build();
 
             return this;
         }
@@ -113,7 +103,7 @@ public class ApplicationDto {
         }
 
         public ApplicationDto build() {
-            return new ApplicationDto(id, name, description, published, vms, network);
+            return new ApplicationDto(id, name, description, published, ImmutableList.copyOf(vms), network);
         }
 
         public Builder fromApplicationDto(ApplicationDto in) {

@@ -23,6 +23,8 @@ public class HttpResponseWrapperTest extends LiveTest {
         assertTrue(response.isErrorResponse(), "Expected request for nonexistant application to be an error");
     }
 
+    // TODO: This test fails if tests are run with anything but cloudsoft email address
+
     @Test(groups = "live")
     public void testErrorMessageExtractedFromHeader() {
         HttpResponseWrapper response = client.get("/applications/35225605");

@@ -2,10 +2,6 @@ package io.cloudsoft.ravello.brooklyn;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
-import io.cloudsoft.ravello.api.RavelloApi;
-import io.cloudsoft.ravello.client.RavelloApiImpl;
-import io.cloudsoft.ravello.dto.Cloud;
-import io.cloudsoft.ravello.dto.VmDto;
 
 import java.net.InetAddress;
 import java.util.Collection;
@@ -17,6 +13,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.io.Closeables;
+
+import brooklyn.config.ConfigKey;
+import brooklyn.entity.basic.ConfigKeys;
 import brooklyn.location.LocationSpec;
 import brooklyn.location.NoMachinesAvailableException;
 import brooklyn.location.basic.SshMachineLocation;
@@ -25,9 +26,10 @@ import brooklyn.util.collections.MutableMap;
 import brooklyn.util.flags.SetFromFlag;
 import brooklyn.util.internal.Repeater;
 import brooklyn.util.time.Time;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.io.Closeables;
+import io.cloudsoft.ravello.api.RavelloApi;
+import io.cloudsoft.ravello.client.RavelloApiImpl;
+import io.cloudsoft.ravello.dto.Cloud;
+import io.cloudsoft.ravello.dto.VmDto;
 
 public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
 
@@ -36,6 +38,12 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
     private RavelloLocationApplicationManager applicationManager;
     private final String sshUsername = "ravello";
     @SetFromFlag private String privateKeyFile;
+
+    public static final ConfigKey<String> USERNAME = ConfigKeys.newStringConfigKey("username");
+    public static final ConfigKey<String> PASSWORD = ConfigKeys.newStringConfigKey("password");
+    public static final ConfigKey<String> PRIVATE_KEY_ID = ConfigKeys.newStringConfigKey("privateKeyId");
+    public static final ConfigKey<String> PREFERRED_CLOUD = ConfigKeys.newStringConfigKey("preferredCloud");
+    public static final ConfigKey<String> PREFERRED_REGION = ConfigKeys.newStringConfigKey("preferredRegion");
 
     /**
      * TODO:
@@ -49,15 +57,16 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
     public void configure(Map properties) {
         super.configure(properties);
         String apiEndpoint = "https://cloud.ravellosystems.com/services";
-        String username = (String) checkNotNull(properties.get("username"), "username");
-        String password = (String) checkNotNull(properties.get("password"), "password");
-        String privateKeyId = (String) checkNotNull(properties.get("privateKeyId"), "privateKeyId");
+        String username = checkNotNull(getConfig(USERNAME), "username");
+        String password = checkNotNull(getConfig(PASSWORD), "password");
+        String privateKeyId = checkNotNull(getConfig(PRIVATE_KEY_ID), "privateKeyId");
 
         RavelloApi ravello = new RavelloApiImpl(apiEndpoint, username, password);
 
-        String preferredCloud = (String) properties.get("preferredCloud");
-        String preferredRegion = (String) properties.get("preferredRegion");
+        String preferredCloud = getConfig(PREFERRED_CLOUD);
+        String preferredRegion = getConfig(PREFERRED_REGION);
 
+        // TODO: Could default to first available region if preferredCloud not null but no region given
         if (preferredCloud == null || preferredRegion == null) {
             LOG.info("Preferred cloud/region not both specified. Defaulting to {}:{}", Cloud.AMAZON.name(), "Virginia");
             preferredCloud = Cloud.AMAZON.name();
@@ -69,12 +78,12 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
         applicationManager = new RavelloLocationApplicationManager(ravello, privateKeyId, preferredCloud, preferredRegion);
     }
 
-    public RavelloSshLocation obtain() throws NoMachinesAvailableException {
+    public RavelloSshMachineLocation obtain() throws NoMachinesAvailableException {
         return obtain(MutableMap.of("inboundPorts", ImmutableList.of(22)));
     }
 
     @Override
-    public RavelloSshLocation obtain(Map<?, ?> flags) throws NoMachinesAvailableException {
+    public RavelloSshMachineLocation obtain(Map<?, ?> flags) throws NoMachinesAvailableException {
         checkNotNull(applicationManager, "Ravello app manager has not been configured");
 
         Collection<?> inboundPorts = Collections.emptyList();
@@ -89,11 +98,11 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
                     "It has no external fully qualified domain name: " + created);
         }
 
-        LOG.info("Created new VM: " + created);
+        LOG.info("Created new VM in {}: {}", this, created);
         waitForReachable(created);
 
         String hostname = created.getRuntimeInformation().getExternalFullyQualifiedDomainName();
-        return getManagementContext().getLocationManager().createLocation(LocationSpec.create(RavelloSshLocation.class)
+        return getManagementContext().getLocationManager().createLocation(LocationSpec.create(RavelloSshMachineLocation.class)
                 .configure("address", hostname)
                 .configure("ravelloParent", this)
                 .configure("displayName", hostname)
@@ -109,6 +118,7 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
     protected void waitForReachable(VmDto vm) {
 
         final String hostname = vm.getRuntimeInformation().getExternalFullyQualifiedDomainName();
+        // TODO Expose as a config key
         int sshTimeout = 20 * 60 * 1000;
         LOG.info("Started vm[{}]. Waiting up to {} for it to be sshable on {}@{}",
                         vm.getId(), Time.makeTimeStringRounded(sshTimeout), sshUsername, hostname);
@@ -157,10 +167,10 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
     @Override
     public void release(SshMachineLocation machine) {
         checkNotNull(applicationManager, "Ravello app manager has not been configured");
-        checkState(machine instanceof RavelloSshLocation,
-                "release() given instance of " + machine.getClass().getName() + ", expected instance of " + RavelloSshLocation.class.getName());
+        checkState(machine instanceof RavelloSshMachineLocation,
+                "release() given instance of " + machine.getClass().getName() + ", expected instance of " + RavelloSshMachineLocation.class.getName());
 
-        RavelloSshLocation ravelloMachine = RavelloSshLocation.class.cast(machine);
+        RavelloSshMachineLocation ravelloMachine = RavelloSshMachineLocation.class.cast(machine);
         applicationManager.release(ravelloMachine.getVm());
     }
 

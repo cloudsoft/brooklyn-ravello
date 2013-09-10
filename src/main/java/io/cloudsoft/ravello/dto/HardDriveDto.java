@@ -88,4 +88,40 @@ public class HardDriveDto {
         this.controllerPciSlot = controllerPciSlot;
         this.peripheral = peripheral;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Boolean isBoot() {
+        return boot;
+    }
+
+    public SizeDto getSize() {
+        return size;
+    }
+
+    public Integer getIndex() {
+        return index;
+    }
+
+    public String getController() {
+        return controller;
+    }
+
+    public Integer getControllerIndex() {
+        return controllerIndex;
+    }
+
+    public Integer getControllerPciSlot() {
+        return controllerPciSlot;
+    }
+
+    public Boolean isPeripheral() {
+        return peripheral;
+    }
 }

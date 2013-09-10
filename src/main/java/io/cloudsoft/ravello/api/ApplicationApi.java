@@ -7,8 +7,8 @@ import io.cloudsoft.ravello.dto.ApplicationDto.ApplicationPropertiesDto;
 
 public interface ApplicationApi {
 
-    // Error handling?
-    // 404 on get, return null. better way? Could return Optional
+    // TODO: Error handling?
+    // TODO: 404 on get, return null. better way? Could return Optional
 
     public List<ApplicationPropertiesDto> get();
     public ApplicationDto get(String id);

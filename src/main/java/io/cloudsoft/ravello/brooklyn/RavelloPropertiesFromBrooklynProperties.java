@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import brooklyn.config.BrooklynProperties;
 import brooklyn.config.ConfigUtils;
 
+// TODO: Use Brooklyn's LocationPropertiesFromBrooklynProperties class as total replacement
 public class RavelloPropertiesFromBrooklynProperties {
 
     public static Map<String, Object> getRavelloProperties(Map<String, Object> properties) {

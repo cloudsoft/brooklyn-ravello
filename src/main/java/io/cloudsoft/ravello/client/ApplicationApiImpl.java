@@ -28,30 +28,37 @@ public class ApplicationApiImpl implements ApplicationApi {
 
     @Override
     public List<ApplicationPropertiesDto> get() {
+        LOG.debug("Getting all applications");
         return ravelloClient.get(url).getList(ApplicationPropertiesDto.class);
     }
 
     @Override
     public ApplicationDto get(String id) {
         checkNotNull(id, "id");
+        LOG.debug("Getting application: {}", id);
         return ravelloClient.get(url + "/" + id).get(ApplicationDto.class);
     }
 
     @Override
     public ApplicationDto create(ApplicationDto application) {
         checkNotNull(application, "application");
+        LOG.debug("Creating application: {}", application);
         return ravelloClient.post(url, application).get(ApplicationDto.class);
     }
 
     @Override
     public ApplicationDto update(String id, ApplicationDto application) {
-        return ravelloClient.put(url + "/" + checkNotNull(id, "id"), checkNotNull(application, "application"))
+        checkNotNull(id, "id");
+        checkNotNull(application, "application");
+        LOG.debug("Updating application {}: {}", id, application);
+        return ravelloClient.put(url + "/" + id, application)
                 .get(ApplicationDto.class);
     }
 
     @Override
     public void delete(String id) {
         checkNotNull(id, "id");
+        LOG.debug("Deleting application: {}", id);
         ravelloClient.delete(url + "/" + id).consumeResponse();
     }
 
@@ -61,7 +68,9 @@ public class ApplicationApiImpl implements ApplicationApi {
         checkNotNull(preferredCloud, "preferredCloud");
         checkNotNull(preferredRegion, "preferredRegion");
         if (!Cloud.fromString(preferredCloud).hasRegion(preferredRegion)) {
-            LOG.warn("Publishing app {} to unknown region in {}: {}", id, preferredCloud, preferredRegion);
+            LOG.warn("Publishing application {} to unknown region in {}: {}", id, preferredCloud, preferredRegion);
+        } else {
+            LOG.debug("Publishing application {} to {}:{}", id, preferredCloud, preferredRegion);
         }
         Map<String, String> body = ImmutableMap.of(
                 "preferredCloud", preferredCloud.toUpperCase(),
@@ -73,16 +82,19 @@ public class ApplicationApiImpl implements ApplicationApi {
 
     @Override
     public boolean startVMs(String applicationId) {
+        LOG.debug("Starting all VMs in application: {}", applicationId);
         return runActionOnApplication(applicationId, "start");
     }
 
     @Override
     public boolean stopVMs(String applicationId) {
+        LOG.debug("Stopping all VMs in application: {}", applicationId);
         return runActionOnApplication(applicationId, "stop");
     }
 
     @Override
     public boolean publishUpdates(String applicationId) {
+        LOG.debug("Publishing updates to application: ", applicationId);
         return runActionOnApplication(applicationId, "publishUpdates");
     }
 
