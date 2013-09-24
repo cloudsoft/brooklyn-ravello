@@ -21,3 +21,9 @@ brooklyn.location.named.ravello.preferredRegion=US West AZ 1
 ```
 
 Check `io.cloudsoft.ravello.dto.Cloud` for known clouds and regions. If the properties are given they are assumed to be correct (so you can deploy to future clouds if you know their names). If the properties are missing we use Amazon/Virginia.
+
+================
+
+&copy; Cloudsoft Corporation 2013. All rights reserved.
+
+Use of this software is subject to the Cloudsoft EULA, provided in licence.txt and at http://www.cloudsoftcorp.com/cloudsoft-developer-license
