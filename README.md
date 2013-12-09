@@ -24,6 +24,10 @@ Check `io.cloudsoft.ravello.dto.Cloud` for known clouds and regions. If the prop
 
 ================
 
-&copy; Cloudsoft Corporation 2013. All rights reserved.
+&copy; 2013 Cloudsoft Corporation Limited. All rights reserved.
 
-Use of this software is subject to the Cloudsoft EULA, provided in licence.txt and at http://www.cloudsoftcorp.com/cloudsoft-developer-license
+Use of this software is subject to the Cloudsoft EULA, provided in LICENSE.md and at 
+
+http://www.cloudsoftcorp.com/cloudsoft-developer-license
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
