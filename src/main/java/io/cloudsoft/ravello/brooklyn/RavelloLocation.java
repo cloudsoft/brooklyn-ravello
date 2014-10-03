@@ -148,7 +148,7 @@ public class RavelloLocation extends AbstractCloudMachineProvisioningLocation {
                                 // fall back to legacy way (will log warning)
                                 sshLoc = new SshMachineLocation(cfg);
                             }
-                            int exitStatus = sshLoc.run(MutableMap.of(), "true");
+                            int exitStatus = sshLoc.execScript(MutableMap.<String,Object>of(), "reachable", ImmutableList.of("true"));
                             return exitStatus == 0;
                         } finally {
                             Closeables.closeQuietly(sshLoc);

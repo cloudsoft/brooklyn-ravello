@@ -12,15 +12,16 @@ public class RavelloPropertiesFromBrooklynPropertiesTest {
 
     private static Map<String, Object> genericProperties() {
         Map<String, Object> properties = Maps.newHashMap();
-        properties.put("brooklyn.ravello.username", "bob");
-        properties.put("brooklyn.ravello.password", "asdf");
-        properties.put("brooklyn.ravello.example", "foo");
+        properties.put("brooklyn.location.ravello.user", "bob");
+        properties.put("brooklyn.location.ravello.password", "asdf");
+        properties.put("brooklyn.location.ravello.example", "foo");
         return properties;
     }
 
+    // FIXME not needed -- see comment in RavelloPropertiesFromBrooklynProperties
     private static Map<String, Object> namedProperties() {
         Map<String, Object> properties = Maps.newHashMap();
-        properties.put("brooklyn.location.named.ravello.username", "john");
+        properties.put("brooklyn.location.named.ravello.user", "john");
         properties.put("brooklyn.location.named.ravello.password", "fdsa");
         return properties;
     }
@@ -28,14 +29,14 @@ public class RavelloPropertiesFromBrooklynPropertiesTest {
     @Test
     public void testGenericProperties() {
         Map<String, Object> properties = RavelloPropertiesFromBrooklynProperties.getRavelloProperties(genericProperties());
-        assertEquals(properties.get("username"), "bob");
+        assertEquals(properties.get("user"), "bob");
         assertEquals(properties.get("password"), "asdf");
     }
 
     @Test
     public void testNamedProperties() {
         Map<String, Object> properties = RavelloPropertiesFromBrooklynProperties.getRavelloProperties(namedProperties());
-        assertEquals(properties.get("username"), "john");
+        assertEquals(properties.get("user"), "john");
         assertEquals(properties.get("password"), "fdsa");
     }
 
@@ -45,7 +46,7 @@ public class RavelloPropertiesFromBrooklynPropertiesTest {
         allProperties.putAll(genericProperties());
         allProperties.putAll(namedProperties());
         Map<String, Object> properties = RavelloPropertiesFromBrooklynProperties.getRavelloProperties(allProperties);
-        assertEquals(properties.get("username"), "john");
+        assertEquals(properties.get("user"), "john");
         assertEquals(properties.get("password"), "fdsa");
         assertEquals(properties.get("example"), "foo");
     }
